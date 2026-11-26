@@ -1,6 +1,6 @@
 # 규칙 ID 목록
 
-> 2026 규칙 2026.8.2 기준. `npm run gen:docs`로 다시 만든다(tools/rules_doc.ts). 결과 화면·결과 엑셀·CLI JSON의 '규칙' 칸에 이 ID가 나온다.
+> 2026 규칙 2026.8.3 기준. `npm run gen:docs`로 다시 만든다(tools/rules_doc.ts). 결과 화면·결과 엑셀·CLI JSON의 '규칙' 칸에 이 ID가 나온다.
 
 ## 이전 ID → 새 ID
 

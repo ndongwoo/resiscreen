@@ -159,6 +159,14 @@ describe('period', () => {
     expect(by(r.findings, 'A-6-DATE-01').map((f) => f.cell)).toEqual(['C5']);
     expect(by(r.findings, 'A-6-DATE-LIMIT').length).toBeGreaterThan(0);
   });
+  it("수면무호흡 시트는 PSG 시행일(C)만 기간 검사: 양압기 처방일(E)·수술일(F)이 다음 해여도 경고 없음", async () => {
+    const k = 'k 수면무호흡';
+    const ok = await run(patch(k, { C5: '2025.11.20', E5: { v: 46037, s: 2 } /* 2026-01-15 */, F5: '2026.02.03', C6: '2025.12.01', E6: '2026.03.10' }));
+    expect(by(ok.findings, 'A-6-DATE-01').filter((f) => f.sheet === k)).toEqual([]);
+    // 대조: PSG 시행일이 기간 밖이면 C열에서만 경고
+    const bad = await run(patch(k, { C5: '2024.12.10', E5: '2026.01.15', F5: '2026.02.03' }));
+    expect(by(bad.findings, 'A-6-DATE-01').filter((f) => f.sheet === k).map((f) => f.cell)).toEqual(['C5']);
+  });
   it('B-2-3 일시는 2025-03~2026-02', async () => {
     expect(by((await run(patch('B-2-3', { C3: '2026.02.20' }))).findings, 'P-PERIOD-MARFEB')).toHaveLength(0);
     expect(by((await run(patch('B-2-3', { C3: '2025.02.20' }))).findings, 'P-PERIOD-MARFEB')).toHaveLength(1);
@@ -339,6 +347,16 @@ describe('생성 문서', () => {
     for (const name of ['RULES.md', 'ITEM_COVERAGE.md']) expect(doc(name)).not.toMatch(/빈칸 INFO\(비활성\)|INFO만\)/);
     expect(doc('RULES.md')).toContain('| B-6-EPORTFOLIO | required | INFO | 끔(결과 없음) |');
     expect(doc('RULES.md')).toContain('| S-DTYPE-NUM | dtype | ERROR/WARNING(수식 참조 여부에 따라) |');
+  });
+  it("ITEM_COVERAGE.md '세부 시트 규칙': 세부 시트에서 도는 규칙(A-6-*, B-2-3-*, P-*)이 시트별로 모두 있다", () => {
+    const d = doc('ITEM_COVERAGE.md');
+    const sec = d.slice(d.indexOf('## 세부 시트 규칙'), d.indexOf('## 혼동 주의 머리글'));
+    const listed = new Set([...sec.matchAll(/^\| [^|]+ \| ([A-Z0-9-]+) \|/gm)].map((m) => m[1]));
+    // A-6-MIN-01·재계산(B-2-3-RECALC 등)은 전체 시트 칸을 본다
+    const want = rules.rules.filter((r) => /^(A-6-|B-2-3-|P-)/.test(r.id) && r.id !== 'A-6-MIN-01' && r.type !== 'recalc').map((r) => r.id);
+    for (const id of want) expect(listed.has(id), id).toBe(true);
+    expect(sec).toMatch(/^\| k 수면무호흡 \| A-6-OSA-02 \|/m);
+    expect(sec).toContain('PSG 시행일');
   });
   it('RULES.md: 규칙 파일의 모든 ID와 이전 ID 매핑이 있고, 이전 ID는 규칙에 남아 있지 않다', () => {
     const d = doc('RULES.md');

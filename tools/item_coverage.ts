@@ -6,7 +6,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { FormFormulas, Rule, RuleSet } from '../src/engine/rules.ts';
+import { fillMessages, type FormFormulas, type Rule, type RuleSet } from '../src/engine/rules.ts';
 import { expandAll, parseCoord } from '../src/engine/xlsx/refs.ts';
 import { confusablePairs } from '../src/engine/columns.ts';
 import { layoutIndex, resolveForLayout } from '../tests/helpers/synthetic_form.ts';
@@ -163,6 +163,61 @@ L.push('- A-11-1(CU, 전공의 휴가현황)과 B-4-1(DY, 전공의 개인별 �
 L.push('- A-3-3(R)·A-10-3 d(CT): 날짜 칸이 없어 3~2월 기간 검사를 못 한다는 INFO만 낸다.');
 L.push('', '## 항목별 표', '', '| 번호 | 열 | 항목 | 세부 | 입력 방식 | 분류 | 점검 내용(규칙) |', '|---|---|---|---|---|---|---|');
 for (const r of rows) L.push(`| ${r.no} | ${r.col} | ${r.code} | ${esc(r.sub.slice(0, 40))} | ${esc(r.kind)} | ${r.cls} | ${esc(r.checks.join('; ') || '-')} |`);
+
+// 세부 시트 규칙: '전체'가 아닌 시트에서 도는 규칙을 시트별로
+const SURGERY = '수술 시트 공통(a~l 12개)';
+const filled = fillMessages(raw);
+const COL_NAME: Record<string, string> = {
+  date_col: '날짜',
+  name_col: '이름',
+  count_col: '횟수',
+  sum_col: '건수 합',
+  pathology_col: '병리',
+  diagnosis_col: '진단',
+  attachment_col: '첨부',
+  venue_col: '장소',
+};
+function detailSheets(r: Rule): string[] {
+  const t = r.target as any;
+  if (r.type === 'paper') return ['논문'];
+  if (t.from_surgery_sheets || r.id === 'A-6-DUP-01') return [SURGERY];
+  if (t.pairs_from_surgery_sheets)
+    return [SURGERY, ...new Set((t.pairs as { sheet_total: string }[]).map((p) => p.sheet_total.replace(/^'?([^'!]+)'?!.*$/, '$1')))];
+  if (t.sheet && t.sheet !== '전체') return [t.sheet];
+  if (t.sheets) return (t.sheets as string[]).filter((x) => x !== '전체');
+  return [];
+}
+function columnsOf(r: Rule, sheet: string): string {
+  const t = r.target as any;
+  const parts: string[] = [];
+  // 시트에 따라 같은 필드의 뜻이 다르다: B-2-3의 이름 칸은 행사명, 수술 시트의 횟수 칸은 행 수를 세는 기준 칸
+  const label = (k: string, name: string) => (k === 'name_col' && sheet === 'B-2-3' ? '행사명' : k === 'count_col' && sheet === SURGERY ? '행 수를 세는 칸' : name);
+  for (const [k, name] of Object.entries(COL_NAME)) if (typeof t[k] === 'string') parts.push(`${t[k]}(${label(k, name)})`);
+  if (Array.isArray(t.cols)) parts.push(`${t.cols.join('·')}(필수)`);
+  if (Array.isArray(t.any_of)) parts.push(`${t.any_of.join('·')} 중 하나`);
+  if (typeof t.total === 'string' && sheet !== SURGERY) parts.push(`${t.total}(총계)`);
+  if (r.id === 'S-SUM-01') {
+    if (sheet === SURGERY) return '시트 총계(G1 등) ↔ 전체 A-6-4';
+    const p = (t.pairs as { summary: string; sheet_total: string }[]).filter((x) => x.sheet_total.replace(/^'?([^'!]+)'?!.*$/, '$1') === sheet);
+    return p.map((x) => `${x.sheet_total.split('!')[1]} ↔ ${local(resolveForLayout(x.summary))}`).join(', ');
+  }
+  return parts.join(', ') || '-';
+}
+const ORDER = [SURGERY, ...rules.surgery_sheets.map((x) => x.sheet), 'A-6', 'B-2-3', '논문', 'A-3-2', 'A-3-3', 'A-10-3-d'];
+const bySheet = new Map<string, Rule[]>();
+for (const r of filled.rules) for (const sh of detailSheets(r)) bySheet.set(sh, [...(bySheet.get(sh) ?? []), r]);
+const sheetOrder = [...bySheet.keys()].sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
+L.push('', '## 세부 시트 규칙', '');
+L.push("'전체' 시트가 아닌 세부 시트(수술 시트·A-6·B-2-3·논문 등)에서 도는 규칙이다. 규칙 파일에서 자동으로 만든다. 꺼 둔 규칙은 결과를 내지 않는다.", '');
+L.push('| 시트 | 규칙 | 단계 | 보는 칸 | 내용 |', '|---|---|---|---|---|');
+for (const sh of sheetOrder)
+  for (const r of bySheet.get(sh)!) {
+    const lv = r.enabled ? r.level : `${r.level}(끔: 결과 없음)`;
+    L.push(`| ${sh} | ${r.id} | ${lv} | ${esc(columnsOf(r, sh))} | ${esc(r.message)} |`);
+  }
+L.push('');
+L.push("- 수술 시트의 날짜 검사(A-6-DATE-01·LIMIT)는 각 시트의 C열 하나만 본다. 'k 수면무호흡'의 C열은 PSG 시행일이며, 양압기 처방일(E)·수술일(F)은 다음 해여도 인정이라 기간 검사를 하지 않는다(시트 A3 산정기준).");
+L.push('- 논문 시트 P-* 규칙의 보는 칸은 규칙 파일 `papers.columns`를 따른다.');
 
 // 혼동 주의 머리글
 const pairs = confusablePairs(layoutIndex());
