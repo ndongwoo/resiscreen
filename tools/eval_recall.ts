@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadWorkbook, type Cell, type Workbook } from '../src/engine/xlsx/workbook.ts';
 import { checkWorkbook, type Finding } from '../src/engine/index.ts';
-import type { FormFormulas, RuleSet } from '../src/engine/rules.ts';
+import { resolveReference, type FormFormulas, type RuleSet } from '../src/engine/rules.ts';
 import { expandAll, parseCoord } from '../src/engine/xlsx/refs.ts';
 import { BiblioClient } from '../src/engine/biblio/client.ts';
 import { BiblioCache } from '../src/engine/biblio/cache.ts';
@@ -30,7 +30,7 @@ const formulas = JSON.parse(readFileSync(join(root, 'data/forms/2026_formulas.js
 const cacheIdx = process.argv.indexOf('--cache');
 const fileCache = cacheIdx > 0 && process.argv[cacheIdx + 1] ? new FileCache(process.argv[cacheIdx + 1]!) : null;
 const settings = rules.biblio as unknown as BiblioSettings;
-const biblio = fileCache ? new BiblioClient(fetch as unknown as FetchLike, settings, new BiblioCache(fileCache, settings.cache_ttl_days), rules.reference.paper_year) : null;
+const biblio = fileCache ? new BiblioClient(fetch as unknown as FetchLike, settings, new BiblioCache(fileCache, settings.cache_ttl_days), resolveReference(rules).paper_year) : null;
 const journals: JournalLists = {
   kci: applyAliases(JSON.parse(readFileSync(join(root, 'data/journals/kci.json'), 'utf8')), JSON.parse(readFileSync(join(root, 'data/journals/kci_aliases.json'), 'utf8')).aliases),
   related: JSON.parse(readFileSync(join(root, 'data/journals/kci_related.json'), 'utf8')),

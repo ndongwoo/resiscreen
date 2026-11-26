@@ -30,6 +30,12 @@ export interface SourceResult {
   records: BiblioRecord[];
   /** 실패 사유(네트워크, 시간 초과, HTTP 코드). URL·응답 본문은 담지 않는다 */
   error?: string;
+  /** 캐시에서 읽었는지(hit) 새로 조회했는지(fresh) */
+  cache?: 'hit' | 'fresh';
+  /** 캐시에서 읽은 경우 원래 조회한 날짜(YYYY-MM-DD) */
+  fetchedAt?: string;
+  /** 캐시 키(내부용, 결과에는 넣지 않음) */
+  cacheKey?: string;
 }
 
 export interface BiblioSettings {
@@ -46,7 +52,12 @@ export interface BiblioSettings {
   retries: number;
   backoff_ms: number[];
   timeout_ms: number;
+  /** 기본 유효 기간(일). 0이면 캐시를 쓰지 않는다 */
   cache_ttl_days: number;
+  /** 결과 종류별 유효 기간(일): 정식 출판, Epub·선출판, 찾지 못함 */
+  cache_ttl?: Partial<Record<'formal' | 'epub' | 'not_found', number>>;
+  /** 캐시 항목 수 상한(넘으면 오래된 것부터 지움) */
+  cache_max_entries?: number;
   /** 동시에 조회할 논문 수 */
   paper_concurrency?: number;
   title_match: { min_similarity: number; require_year_match: boolean; require_journal_match: boolean; below_threshold?: string };

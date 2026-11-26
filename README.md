@@ -133,6 +133,30 @@ GitHub Pages 주소에서 사람이 직접 확인합니다. 결과는 날짜와 
 - **유관학회지 11종**: `data/journals/kci_related.json` (GitHub 웹 화면에서 직접 고칠 수 있습니다)
 - **흔히 쓰는 저널 별칭**: `data/journals/kci_aliases.json` (ISSN → 별칭 목록)
 
+## 새 연도 양식 추가 절차
+
+평가연도마다 규칙 파일 하나(`rules/<연도>.json`)를 둡니다. 웹 화면과 CLI는 `rules/` 폴더의 모든 연도 파일을 읽고, 엑셀의 서명(`form.signature`)으로 양식 연도를 알아내 그 해 규칙을 씁니다. 맞는 규칙이 없으면 '지원하지 않는 양식' ERROR를 냅니다.
+
+1. **규칙 파일 복사**: `rules/2026.json`을 `rules/2027.json`으로 복사합니다(GitHub 웹 화면: 파일 열기 → Raw 내용 복사 → Add file → Create new file).
+2. **연도와 서명 수정**: `form.year`를 2027로 바꿉니다.
+   - 실적 기간(Y-1년 1~12월), 3~2월 항목 기간(Y-1년 3월~Y년 2월 말일, 윤년 자동), 전문의 수 기준일(Y-1년 9/30), 논문 연도(Y-1)는 `form.year`에서 자동 계산됩니다. 다르게 정해야 할 때만 `reference`에 값을 직접 적습니다(적은 값이 우선).
+   - `form.label`과 `form.signature`(표지·'전체' 시트의 고정 문구 셀)를 새 양식에 맞게 고칩니다. 서명이 지난해와 같으면 지난해 파일이 먼저 맞을 수 있으므로, 표지의 연도 문구처럼 해마다 바뀌는 칸을 반드시 넣습니다.
+3. **바뀐 항목·셀 수정**: 새 양식에서 열이 추가·삭제되었으면 각 규칙의 `target`(셀 주소·범위), `surgery_sheets`, `papers.columns`를 고칩니다. 올해 제외·부활 항목은 `enabled`로 켜고 끕니다(예: E-2-b). `rules_version`도 올립니다.
+4. **자동계산 칸 위치**: 새 양식 완성본으로 `data/forms/<연도>_formulas.json`을 만듭니다(수식 위치만, 값·이름 없이). 개발자에게 요청합니다.
+5. **합성 샘플 추가**: `tests/helpers/synthetic_form.ts`와 `tools/make_synthetic.ts`로 새 연도 합성 샘플을 만들어 `tests/fixtures/synthetic/`에 둡니다. 실제 병원 파일은 넣지 않습니다.
+6. **KCI 목록 갱신**: 아래 '저널 목록 갱신' 절차로 `data/journals/kci.json`을 새 기준일로 바꿉니다.
+7. **검사**: `npm test`, `npm run validate:rules`, 그리고 **`npm run scan:private`(0건 확인)**.
+8. **push**: main에 push하면 CI와 Pages 배포가 자동으로 돕니다. 배포 후 '배포 후 확인' 체크리스트를 진행합니다.
+
+## 서지 조회 캐시
+
+- 결과 종류별 유효 기간(`biblio.cache_ttl`): 정식 출판(권·호·쪽 등 근거 있음) 30일, Epub·온라인 선출판 3일, 찾지 못함 1일. 네트워크 오류·시간 초과·취소는 저장하지 않습니다.
+- 항목 수 상한(`biblio.cache_max_entries`, 기본 2,000): 넘으면 오래된 것부터 지웁니다(기한이 지난 항목도 함께).
+- 캐시 키에 형식 버전(`CACHE_FORMAT_VERSION`, `src/engine/biblio/client.ts`)이 들어 있습니다. 매칭·판정 로직을 바꾸면 이 값을 올려 옛 캐시를 쓰지 않게 합니다.
+- 결과 화면의 '논문 조회 결과' 표와 결과 엑셀의 '논문 조회' 시트에 논문마다 출처별 결과와 '캐시(조회일)' 또는 '새로 조회'를 표시합니다.
+- 확인 불가·확신 미달·Epub·DOI 불일치·연도 결과에는 '다시 조회' 버튼이 있습니다. 그 논문만 캐시를 무시하고 다시 조회해 그 논문의 결과만 바꿉니다. 전체 캐시는 '서지 조회 캐시 지우기'로 지웁니다.
+- 캐시에는 공개 서지 정보만 저장합니다. 연락처 이메일과 엑셀 파일 내용은 들어가지 않습니다.
+
 ## 저장소 이전(학회 조직 계정으로)
 
 처음에는 개인 계정(`ndongwoo/resiscreen`, 배포 주소 https://nam.md/resiscreen/)에 두고, 학회 조직 계정이 생기면 옮깁니다.

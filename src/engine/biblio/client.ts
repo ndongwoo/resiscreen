@@ -6,15 +6,40 @@
 import { BiblioCache } from './cache.ts';
 import { crossrefDoiUrl, crossrefTitleUrl, parseCrossrefSearch, parseCrossrefWork } from './crossref.ts';
 import { doiTerm, efetchUrl, esearchUrl, parseEfetch, parseEsearch, titleTerm } from './pubmed.ts';
-import { journalMatch, norm, normDoi, recordYears, titleSimilarity, validDoi } from './match.ts';
+import { hasFormalEvidence, journalMatch, norm, normDoi, recordYears, titleSimilarity, validDoi } from './match.ts';
 import { errorCode, Scheduler, type FetchLike, type SchedulerOptions } from './throttle.ts';
 import type { BiblioRecord, BiblioSettings, SourceResult } from './types.ts';
 
 /** 외부 조회를 허용하는 호스트(index.html CSP connect-src와 같게 유지) */
 export const ALLOWED_HOSTS = ['api.crossref.org', 'eutils.ncbi.nlm.nih.gov'];
 
+/**
+ * 캐시 형식 버전. 매칭·판정 로직이나 저장 형식이 바뀌면 올린다(옛 캐시 항목은 키가 달라 쓰이지 않고,
+ * 기한이 지나거나 항목 수 상한을 넘으면 prune으로 지워진다).
+ */
+export const CACHE_FORMAT_VERSION = 2;
+
+export function cacheKey(source: 'crossref' | 'pubmed', kind: 'doi' | 'title', value: string): string {
+  return `v${CACHE_FORMAT_VERSION}:${source}:${kind}:${value}`;
+}
+
+/** 캐시 결과 종류: 정식 출판(권·호·쪽 등) / Epub·온라인 선출판 / 찾지 못함 */
+export type CacheKind = 'formal' | 'epub' | 'not_found';
+
+interface CachedValue {
+  kind: CacheKind;
+  records: BiblioRecord[];
+}
+
+export interface LookupOptions {
+  /** 캐시를 무시하고 다시 조회(결과는 새로 저장) */
+  bypassCache?: boolean;
+}
+
 export interface PaperQuery {
   title: string;
+  /** 논문 실적 연도(양식 연도에서 계산). 없으면 클라이언트 기본값 */
+  paperYear?: number;
   journal: string;
   doi: string;
   claimedYear: number | null;
@@ -63,7 +88,8 @@ export class BiblioClient {
     fetchFn: FetchLike,
     readonly settings: BiblioSettings,
     readonly cache: BiblioCache,
-    readonly paperYear: number,
+    /** 기본 논문 실적 연도(질의에 paperYear가 없을 때만 씀) */
+    readonly paperYear: number = 0,
     /** 이번 실행에서 Crossref mailto로 쓸 연락처(웹: 사용자가 입력한 값). 없으면 settings.mailto */
     private readonly contact: string = settings.mailto,
     /** 테스트용 시계 */
@@ -93,53 +119,75 @@ export class BiblioClient {
     return structuredClone(this.stats);
   }
 
-  private async cached(source: 'crossref' | 'pubmed', key: string, load: () => Promise<BiblioRecord[] | null>): Promise<BiblioRecord[]> {
-    const hit = await this.cache.get<BiblioRecord[]>(key);
-    if (hit) {
-      this.stats[source].cacheHits++;
-      return hit;
-    }
-    const v = (await load()) ?? [];
-    await this.cache.set(key, v); // 빈 결과(없음)도 저장. 오류는 예외라 저장되지 않는다
-    return v;
+  /** 캐시에서 읽기(무시 옵션이면 건너뜀). 저장은 lookup()이 매칭 뒤 결과 종류별 TTL로 한다 */
+  private async fromCache(source: 'crossref' | 'pubmed', key: string, bypass: boolean): Promise<SourceResult | null> {
+    if (bypass) return null;
+    const hit = await this.cache.getEntry<CachedValue>(key);
+    if (!hit || !Array.isArray(hit.v?.records)) return null;
+    this.stats[source].cacheHits++;
+    const records = hit.v.records;
+    return { source, status: records.length ? 'ok' : 'not_found', records, cache: 'hit', fetchedAt: new Date(hit.t).toISOString().slice(0, 10), cacheKey: key };
   }
 
-  async crossref(q: PaperQuery, signal?: AbortSignal): Promise<SourceResult> {
+  async crossref(q: PaperQuery, signal?: AbortSignal, opts: LookupOptions = {}): Promise<SourceResult> {
+    // 연락처는 요청 URL에만 쓰고 캐시 키·결과에는 넣지 않는다
+    const key = validDoi(q.doi) ? cacheKey('crossref', 'doi', normDoi(q.doi)) : cacheKey('crossref', 'title', norm(q.title));
+    const hit = await this.fromCache('crossref', key, Boolean(opts.bypassCache));
+    if (hit) return this.count(hit);
     try {
-      // 연락처는 요청 URL에만 쓰고 캐시 키·결과에는 넣지 않는다
       const mail = this.contact;
-      const records = validDoi(q.doi)
-        ? await this.cached('crossref', `crossref:doi:${normDoi(q.doi)}`, async () => {
-            const body = await this.schedulers.crossref.get('crossref', crossrefDoiUrl(q.doi, mail), signal);
-            return body === null ? [] : parseCrossrefWork(body);
-          })
-        : await this.cached('crossref', `crossref:title:${norm(q.title)}`, async () => {
-            const body = await this.schedulers.crossref.get('crossref', crossrefTitleUrl(q.title, mail), signal);
-            return body === null ? [] : parseCrossrefSearch(body);
-          });
-      return this.count({ source: 'crossref', status: records.length ? 'ok' : 'not_found', records });
+      let records: BiblioRecord[];
+      if (validDoi(q.doi)) {
+        const body = await this.schedulers.crossref.get('crossref', crossrefDoiUrl(q.doi, mail), signal);
+        records = body === null ? [] : parseCrossrefWork(body);
+      } else {
+        const body = await this.schedulers.crossref.get('crossref', crossrefTitleUrl(q.title, mail), signal);
+        records = body === null ? [] : parseCrossrefSearch(body);
+      }
+      return this.count({ source: 'crossref', status: records.length ? 'ok' : 'not_found', records, cache: 'fresh', cacheKey: key });
     } catch (e) {
-      return this.count({ source: 'crossref', status: 'error', records: [], error: errorCode(e) });
+      return this.count({ source: 'crossref', status: 'error', records: [], error: errorCode(e), cache: 'fresh' });
     }
   }
 
-  async pubmed(q: PaperQuery, signal?: AbortSignal): Promise<SourceResult> {
+  async pubmed(q: PaperQuery, signal?: AbortSignal, opts: LookupOptions = {}): Promise<SourceResult> {
+    const key = validDoi(q.doi) ? cacheKey('pubmed', 'doi', normDoi(q.doi)) : cacheKey('pubmed', 'title', norm(q.title));
+    const hit = await this.fromCache('pubmed', key, Boolean(opts.bypassCache));
+    if (hit) return this.count(hit);
     try {
       // E-utilities에는 tool=resiscreen과 학회 연락처(설정값)를 고정으로 보낸다
       const mail = this.settings.pubmed_email ?? this.settings.mailto;
-      const key = validDoi(q.doi) ? `pubmed:doi:${normDoi(q.doi)}` : `pubmed:title:${norm(q.title)}`;
-      const records = await this.cached('pubmed', key, async () => {
-        const term = validDoi(q.doi) ? doiTerm(q.doi) : titleTerm(q.title);
-        const body = await this.schedulers.pubmed.get('pubmed', esearchUrl(term, mail), signal);
-        const ids = body === null ? [] : parseEsearch(body);
-        if (!ids.length) return [];
+      const term = validDoi(q.doi) ? doiTerm(q.doi) : titleTerm(q.title);
+      const body = await this.schedulers.pubmed.get('pubmed', esearchUrl(term, mail), signal);
+      const ids = body === null ? [] : parseEsearch(body);
+      let records: BiblioRecord[] = [];
+      if (ids.length) {
         const xml = await this.schedulers.pubmed.get('pubmed', efetchUrl(ids, mail), signal);
-        return xml === null ? [] : parseEfetch(xml);
-      });
-      return this.count({ source: 'pubmed', status: records.length ? 'ok' : 'not_found', records });
+        records = xml === null ? [] : parseEfetch(xml);
+      }
+      return this.count({ source: 'pubmed', status: records.length ? 'ok' : 'not_found', records, cache: 'fresh', cacheKey: key });
     } catch (e) {
-      return this.count({ source: 'pubmed', status: 'error', records: [], error: errorCode(e) });
+      return this.count({ source: 'pubmed', status: 'error', records: [], error: errorCode(e), cache: 'fresh' });
     }
+  }
+
+  /** 결과 종류별 유효 기간(일). 네트워크 오류·시간 초과·취소는 저장하지 않는다(null) */
+  ttlFor(kind: CacheKind | null): number | null {
+    if (!kind) return null;
+    const t = this.settings.cache_ttl ?? {};
+    const d = { formal: 30, epub: 3, not_found: 1 };
+    return t[kind] ?? d[kind];
+  }
+
+  /** 새로 조회한 출처 결과를 매칭 결과에 따라 저장한다 */
+  private async store(res: SourceResult, matched: ScoredCandidate[]): Promise<void> {
+    if (res.cache !== 'fresh' || res.status === 'error' || !res.cacheKey) return;
+    const mine = matched.filter((m) => m.record.source === res.source).map((m) => m.record);
+    const kind: CacheKind = mine.length === 0 ? 'not_found' : mine.some(hasFormalEvidence) ? 'formal' : 'epub';
+    const ttl = this.ttlFor(kind);
+    if (ttl === null) return;
+    const value: CachedValue = { kind, records: res.records };
+    await this.cache.set(res.cacheKey, value, ttl);
   }
 
   private count(r: SourceResult): SourceResult {
@@ -154,7 +202,7 @@ export class BiblioClient {
   score(q: PaperQuery, r: BiblioRecord): ScoredCandidate {
     const tm = this.settings.title_match;
     const similarity = titleSimilarity(q.title, r.title);
-    const years = new Set([this.paperYear, ...(q.claimedYear ? [q.claimedYear] : [])]);
+    const years = new Set([q.paperYear ?? this.paperYear, ...(q.claimedYear ? [q.claimedYear] : [])]);
     const yearOk = recordYears(r).some((y) => years.has(y));
     const journalOk = journalMatch(q.journal, r);
     const byDoi = validDoi(q.doi) && normDoi(q.doi) === r.doi;
@@ -164,14 +212,14 @@ export class BiblioClient {
     return { record: r, similarity, yearOk, journalOk, matched };
   }
 
-  async lookup(q: PaperQuery, signal?: AbortSignal): Promise<LookupResult> {
+  async lookup(q: PaperQuery, signal?: AbortSignal, opts: LookupOptions = {}): Promise<LookupResult> {
     const enabled = this.settings.sources;
     const order: ('crossref' | 'pubmed')[] = q.domestic
       ? [this.settings.domestic_prefer, this.settings.domestic_prefer === 'crossref' ? 'pubmed' : 'crossref']
       : ['crossref', 'pubmed'];
     const sources: SourceResult[] = [];
     let scored: ScoredCandidate[] = [];
-    const run = (src: 'crossref' | 'pubmed') => (src === 'crossref' ? this.crossref(q, signal) : this.pubmed(q, signal));
+    const run = (src: 'crossref' | 'pubmed') => (src === 'crossref' ? this.crossref(q, signal, opts) : this.pubmed(q, signal, opts));
     const active = order.filter((s) => enabled.includes(s));
     if (q.domestic) {
       // 국내지: 우선 출처에서 확신 있게 맞으면 다른 출처를 조회하지 않는다
@@ -193,6 +241,7 @@ export class BiblioClient {
     if (sources.some((s) => s.error === 'cancelled')) return { status: 'cancelled', sources, matched: [] };
     if (signal?.aborted) return { status: 'cancelled', sources, matched: [] };
     const matched = scored.filter((s) => s.matched);
+    for (const res of sources) await this.store(res, matched);
     const best = [...scored].sort((a, b) => b.similarity - a.similarity)[0];
     const doiTitleMismatch = validDoi(q.doi) && scored.some((s) => s.record.doi === normDoi(q.doi) && !s.matched);
     if (matched.length) return { status: 'matched', sources, matched, best: matched[0], doiTitleMismatch };

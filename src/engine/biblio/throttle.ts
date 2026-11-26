@@ -1,7 +1,7 @@
 /**
  * 요청 간격 제어와 재시도. Scheduler 인스턴스 하나가 출처 하나를 맡는다(BiblioClient가 Crossref·PubMed용을 따로 만든다).
  * - 인스턴스마다 요청 시작 간격을 1/maxRequestsPerSecond초 이상으로 둔다.
- *   현재 설정(rules/2026.json biblio.source_rps): Crossref 초당 1.5건·동시 1개, PubMed 초당 2건·동시 1개.
+ *   현재 설정(rules/<연도>.json biblio.source_rps): Crossref 초당 1.5건·동시 1개, PubMed 초당 2건·동시 1개.
  *   두 출처의 간격은 서로 영향을 주지 않는다(출처별 요청 한도가 따로이므로).
  * - 네트워크 오류는 429일 수 있다고 본다(Crossref 429 응답에는 CORS 헤더가 없어 브라우저에서 상태코드를 못 읽음).
  *   네트워크 오류·시간 초과·429·5xx는 backoff_ms 간격으로 retries회까지 다시 시도한다.

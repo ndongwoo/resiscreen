@@ -45,18 +45,15 @@ export interface SurgerySheet {
   date_col?: string;
 }
 
+export { lastDayOfFeb, resolveReference, withResolvedReference, type EffectiveRuleSet, type Period, type ResolvedReference } from './reference.ts';
+import type { EffectiveRuleSet, ResolvedReference } from './reference.ts';
+
 export interface RuleSet {
   status?: string;
   rules_version?: string;
   form: { year: number; label: string; signature: SignatureItem[]; required_sheets: string[] };
-  reference: {
-    period_default: { start: string; end: string };
-    period_mar_feb: { start: string; end: string };
-    staff_count_date: string;
-    paper_year: number;
-    large_file_mb: number;
-    [k: string]: unknown;
-  };
+  /** 비워 두면 form.year에서 계산한다(resolveReference). 값을 적으면 그 값이 우선 */
+  reference?: Partial<ResolvedReference> & Record<string, unknown>;
   biblio?: Record<string, unknown>;
   surgery_sheets: SurgerySheet[];
   papers?: PapersConfig;
@@ -70,7 +67,7 @@ export interface FormFormulas {
 
 export interface Context {
   wb: Workbook;
-  rules: RuleSet;
+  rules: EffectiveRuleSet;
   formulas?: FormFormulas;
   /** 수식이 참조하는 범위(시트별) */
   referenced: Map<string, Range[]>;

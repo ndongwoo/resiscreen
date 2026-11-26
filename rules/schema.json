@@ -5,7 +5,6 @@
   "type": "object",
   "required": [
     "form",
-    "reference",
     "surgery_sheets",
     "rules"
   ],
@@ -70,13 +69,6 @@
     },
     "reference": {
       "type": "object",
-      "required": [
-        "period_default",
-        "period_mar_feb",
-        "staff_count_date",
-        "paper_year",
-        "large_file_mb"
-      ],
       "properties": {
         "period_default": {
           "$ref": "#/definitions/period"
@@ -97,6 +89,9 @@
         "large_file_mb": {
           "type": "number",
           "minimum": 1
+        },
+        "_note": {
+          "type": "string"
         }
       }
     },
@@ -202,6 +197,31 @@
         },
         "pubmed_email": {
           "type": "string"
+        },
+        "cache_ttl": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "formal": {
+              "type": "number",
+              "minimum": 0
+            },
+            "epub": {
+              "type": "number",
+              "minimum": 0
+            },
+            "not_found": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "cache_ttl_note": {
+          "type": "string"
+        },
+        "cache_max_entries": {
+          "type": "integer",
+          "minimum": 10
         }
       }
     },

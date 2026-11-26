@@ -90,7 +90,9 @@ describe('서지 대조', () => {
     const r = await run({}, f);
     expect(r.biblio.bySource?.crossref).toMatchObject({ ok: 1, error: 0, retries: 1 });
     expect(r.biblio.bySource?.pubmed).toMatchObject({ ok: 0, error: 1, retries: 3 });
-    expect(r.papers).toEqual([expect.objectContaining({ row: 4, status: 'matched', domestic: false, sources: { crossref: 'ok', pubmed: 'error:network' } })]);
+    expect(r.papers).toEqual([
+      expect.objectContaining({ row: 4, status: 'matched', domestic: false, sources: { crossref: { status: 'ok', cache: 'fresh' }, pubmed: { status: 'error', error: 'network', cache: 'fresh' } } }),
+    ]);
   });
   it('Epub(권·호·쪽 없음) → 정식 출판 전 WARNING', async () => {
     const r = await run({}, onlyCrossref({ volume: undefined, issue: undefined, page: undefined, 'published-print': undefined, 'published-online': { 'date-parts': [[2025, 2, 1]] }, published: { 'date-parts': [[2025, 2, 1]] } }));
@@ -178,5 +180,39 @@ describe('DOI 열이 있는 양식', () => {
     await run({ X3: 'DOI', X4: '10.1234/a' }, f);
     expect(calls[0]).toContain('/works/10.1234%2Fa');
     expect(by((await run({ X3: 'DOI', X4: 'abc' }, null)).findings, 'P-DOI-01').map((x) => x.cell)).toEqual(['X4']);
+  });
+});
+
+import { checkWorkbookSession, recheckPapers } from '../../src/engine/index.ts';
+
+describe('다시 조회(논문 한 편만)', () => {
+  it('캐시를 무시하고 그 논문만 다시 조회해 그 행의 결과만 바꾼다', async () => {
+    const bytes = await buildXlsx(syntheticForm(rules, formulas, { papers: 2, patch: { 논문: { J4: 2 } } })); // 4행: 저자 수 WARNING(시트 안 검사)
+    let mode: 'fail' | 'ok' = 'fail';
+    const { f, calls } = fakeFetch({ crossref: () => (mode === 'fail' ? { status: 503, ok: false, text: async () => '' } : crossrefSearch([crossrefItem()])), pubmed: pubmedEmpty });
+    const client = new BiblioClient(f, { ...SETTINGS, retries: 0 }, new BiblioCache(new MemoryCache(), 30), 2025);
+    const { report, session } = await checkWorkbookSession({ bytes, fileName: 'x.xlsx', rules, formulas, biblio: client, journals: KCI });
+    // 4·5행 모두 Crossref 실패 + PubMed 없음 → 외부 서지 확인 불가
+    expect(by(report.findings, 'P-BIB-FAIL').map((x) => x.row)).toEqual([4, 5]);
+    const before5 = report.findings.filter((x) => x.row === 5 && x.sheet === '논문');
+    mode = 'ok';
+    const n = calls.length;
+    const after = await recheckPapers(session!, [4], { client, journals: KCI });
+    expect(calls.length).toBeGreaterThan(n); // 실제로 다시 요청함
+    expect(by(after.findings, 'P-BIB-FAIL').map((x) => x.row)).toEqual([5]); // 4행만 바뀜
+    expect(after.findings.filter((x) => x.row === 5 && x.sheet === '논문')).toEqual(before5);
+    expect(by(after.findings, 'P-COUNT-01').map((x) => x.row)).toEqual([4]); // 시트 안 검사 결과는 그대로
+    expect(after.papers?.find((p) => p.row === 4)?.status).toBe('matched');
+    expect(after.papers?.find((p) => p.row === 4)?.sources['crossref']).toMatchObject({ status: 'ok', cache: 'fresh' });
+    expect(after.summary.WARNING).toBe(after.findings.filter((x) => x.level === 'WARNING').length);
+  });
+  it('논문별 결과에 캐시 적중과 조회일을 표시한다', async () => {
+    const store = new MemoryCache();
+    const f = onlyCrossref({});
+    const mk = () => new BiblioClient(f, SETTINGS, new BiblioCache(store, 30), 2025);
+    const bytes = await buildXlsx(syntheticForm(rules, formulas, { papers: 1 }));
+    await checkWorkbook({ bytes, fileName: 'x.xlsx', rules, formulas, biblio: mk(), journals: KCI });
+    const r2 = await checkWorkbook({ bytes, fileName: 'x.xlsx', rules, formulas, biblio: mk(), journals: KCI });
+    expect(r2.papers?.[0]?.sources['crossref']).toMatchObject({ status: 'ok', cache: 'hit', fetchedAt: new Date().toISOString().slice(0, 10) });
   });
 });

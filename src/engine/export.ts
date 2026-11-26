@@ -19,6 +19,14 @@ export async function reportToXlsx(report: Report): Promise<Uint8Array> {
   const rows: [string, string | number][] = [
     ['파일', report.file.name],
     ['양식 연도', report.formYear ?? '지원하지 않는 양식'],
+    ...(report.form
+      ? ([
+          ['실적 기간', `${report.form.period_default.start} ~ ${report.form.period_default.end}`],
+          ['3~2월 항목 기간', `${report.form.period_mar_feb.start} ~ ${report.form.period_mar_feb.end}`],
+          ['전문의 수 기준일', report.form.staff_count_date],
+          ['논문 연도', report.form.paper_year],
+        ] as [string, string | number][])
+      : []),
     ['ERROR (제출 전 반드시 수정)', report.summary.ERROR],
     ['WARNING (확인 권장)', report.summary.WARNING],
     ['INFO (참고)', report.summary.INFO],
@@ -65,6 +73,25 @@ export async function reportToXlsx(report: Report): Promise<Uint8Array> {
     if (color) row.getCell('level').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } };
   }
   list.autoFilter = { from: 'A1', to: 'G1' };
+
+  // 논문별 조회 결과(출처별 결과와 캐시·조회일). 논문 제목은 넣지 않는다
+  if (!report.biblio.skipped && (report.papers ?? []).length) {
+    const ps = wb.addWorksheet('논문 조회');
+    ps.columns = [
+      { header: '행', key: 'row', width: 6 },
+      { header: '저널(기재)', key: 'journal', width: 36 },
+      { header: '기재 구분', key: 'claim', width: 22 },
+      { header: '결과', key: 'status', width: 22 },
+      { header: 'Crossref', key: 'crossref', width: 30 },
+      { header: 'PubMed', key: 'pubmed', width: 30 },
+    ];
+    ps.getRow(1).font = { bold: true };
+    const label: Record<string, string> = { matched: '일치', uncertain: '확신 미달(후보 확인 필요)', not_found: '후보 없음', failed: '조회 실패', cancelled: '취소됨', skipped: '조회 안 함' };
+    const src = (x?: { status: string; error?: string; cache: string; fetchedAt?: string }) =>
+      !x ? '-' : `${x.status === 'ok' ? '찾음' : x.status === 'not_found' ? '없음' : `실패(${x.error ?? '오류'})`} · ${x.cache === 'hit' ? `캐시(${x.fetchedAt ?? '날짜 모름'} 조회)` : '새로 조회'}`;
+    for (const p of report.papers ?? [])
+      ps.addRow({ row: p.row, journal: p.journal, claim: p.claim, status: label[p.status] ?? p.status, crossref: src(p.sources['crossref']), pubmed: src(p.sources['pubmed']) });
+  }
   const buf = await wb.xlsx.writeBuffer();
   return new Uint8Array(buf as ArrayBuffer);
 }

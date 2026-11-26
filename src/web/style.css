@@ -385,3 +385,8 @@ table.findings th {
 .status.bad {
   color: var(--error-ink);
 }
+.small-btn {
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}

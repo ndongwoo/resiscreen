@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 /**
  * resiscreen CLI (학회 내부 일괄 처리용)
- *   resiscreen check <파일들...> --out <폴더> [--rules rules/2026.json] [--no-biblio]
+ *   resiscreen check <파일들...> --out <폴더> [--rules rules/YYYY.json(없으면 rules/의 모든 연도)] [--no-biblio]
  *                    [--scie <SCIE 목록.xlsx|csv>] [--cache <캐시 파일>]
  * 파일마다 <이름>.점검결과.xlsx 와 <이름>.result.json 을 만든다.
  */
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { existsSync, readdirSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkWorkbook } from '../engine/index.ts';
 import { reportToStableJson, reportToXlsx } from '../engine/export.ts';
-import type { FormFormulas, RuleSet } from '../engine/rules.ts';
+import { resolveReference, type FormFormulas, type RuleSet } from '../engine/rules.ts';
 import { validateRuleSet } from '../engine/schema.ts';
 import { BiblioClient } from '../engine/biblio/client.ts';
 import { BiblioCache } from '../engine/biblio/cache.ts';
@@ -49,7 +50,7 @@ export async function main(argv: string[]): Promise<number> {
   if (cmd !== 'check') usage();
   const files: string[] = [];
   let out = 'out';
-  let rulesPath = join(repoRoot(), 'rules/2026.json');
+  let rulesPath = ''; // 비우면 rules/ 폴더의 모든 연도 파일
   let useBiblio = true;
   let sciePath = '';
   let cachePath = join(homedir(), '.cache/resiscreen/biblio.json');
@@ -65,14 +66,32 @@ export async function main(argv: string[]): Promise<number> {
     else files.push(a);
   }
   if (files.length === 0) usage();
-  const rules = JSON.parse(await readFile(rulesPath, 'utf8')) as RuleSet;
+  // 규칙: rules/의 모든 연도 파일(YYYY.json)을 읽어 엑셀 signature로 고른다. --rules면 그 파일 하나만
   const schema = JSON.parse(await readFile(join(repoRoot(), 'rules/schema.json'), 'utf8'));
-  const errs = validateRuleSet(rules, schema);
-  if (errs.length) {
-    console.error(`규칙 파일 오류(${rulesPath}):\n  ${errs.join('\n  ')}`);
+  const rulePaths = rulesPath
+    ? [rulesPath]
+    : readdirSync(join(repoRoot(), 'rules'))
+        .filter((f) => /^\d{4}\.json$/.test(f))
+        .map((f) => join(repoRoot(), 'rules', f));
+  const rulesets: RuleSet[] = [];
+  const formulas: Record<number, FormFormulas> = {};
+  for (const p of rulePaths) {
+    const rs = JSON.parse(await readFile(p, 'utf8')) as RuleSet;
+    const errs = validateRuleSet(rs, schema);
+    if (errs.length) {
+      console.error(`규칙 파일 오류(${p}):\n  ${errs.join('\n  ')}`);
+      return 2;
+    }
+    rulesets.push(rs);
+    const fp = join(repoRoot(), `data/forms/${rs.form.year}_formulas.json`);
+    if (existsSync(fp)) formulas[rs.form.year] = JSON.parse(await readFile(fp, 'utf8')) as FormFormulas;
+  }
+  if (!rulesets.length) {
+    console.error('규칙 파일이 없습니다(rules/YYYY.json).');
     return 2;
   }
-  const formulas = JSON.parse(await readFile(join(repoRoot(), `data/forms/${rules.form.year}_formulas.json`), 'utf8')) as FormFormulas;
+  // 서지 설정·학술지 목록 경로는 가장 최근 연도 규칙을 따른다
+  const rules = rulesets.slice().sort((a, b) => b.form.year - a.form.year)[0]!;
   const journals: JournalLists = {};
   for (const [k, rel] of Object.entries(rules.papers?.journal_lists ?? {})) {
     if (k === 'kci' || k === 'related') journals[k] = JSON.parse(await readFile(join(repoRoot(), rel), 'utf8'));
@@ -82,14 +101,15 @@ export async function main(argv: string[]): Promise<number> {
   if (sciePath) journals.scie = await parseJournalListFile(new Uint8Array(await readFile(sciePath)), basename(sciePath));
   const fileCache = new FileCache(cachePath);
   const settings = rules.biblio as unknown as BiblioSettings | undefined;
-  const biblio =
-    useBiblio && settings ? new BiblioClient(fetch as unknown as FetchLike, settings, new BiblioCache(fileCache, settings.cache_ttl_days), rules.reference.paper_year, mailto || settings.mailto) : null;
+  // 파일마다 새 클라이언트를 만들어 출처별 집계가 파일 사이에 섞이지 않게 한다(캐시는 공유)
+  const makeClient = () =>
+    useBiblio && settings ? new BiblioClient(fetch as unknown as FetchLike, settings, new BiblioCache(fileCache, settings.cache_ttl_days), resolveReference(rules).paper_year, mailto || settings.mailto) : null;
   const app = appVersion();
   await mkdir(out, { recursive: true });
   let worst = 0;
   for (const f of files) {
     const bytes = new Uint8Array(await readFile(f));
-    const report = await checkWorkbook({ bytes, fileName: basename(f), rules, formulas, biblio, journals, appVersion: app });
+    const report = await checkWorkbook({ bytes, fileName: basename(f), rules: rulesets, formulas, biblio: makeClient(), journals, appVersion: app });
     fileCache.flush();
     const stem = basename(f).replace(/\.[^.]+$/, '');
     await writeFile(join(out, `${stem}.result.json`), reportToStableJson(report));

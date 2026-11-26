@@ -2,6 +2,9 @@
 
 export type Level = 'ERROR' | 'WARNING' | 'INFO';
 
+/** '다시 조회' 버튼을 붙이는 논문 결과 규칙(외부 조회에서 나오는 확인 불가·확신 미달·Epub·DOI 불일치·연도) */
+export const RECHECKABLE_RULES = ['P-BIB-FAIL', 'P-BIB-UNSURE', 'P-EPUB-01', 'P-DOI-01', 'P-DOI-02', 'P-YEAR-01'];
+
 export interface Finding {
   level: Level;
   ruleId: string;
@@ -37,6 +40,14 @@ export interface BiblioStats {
   bySource?: { crossref: SourceStats; pubmed: SourceStats };
 }
 
+export interface PaperSource {
+  status: 'ok' | 'not_found' | 'error';
+  error?: string;
+  /** hit: 캐시(fetchedAt에 조회한 날), fresh: 이번에 새로 조회 */
+  cache: 'hit' | 'fresh';
+  fetchedAt?: string;
+}
+
 /** 논문별 조회 결과(제목은 담지 않는다) */
 export interface PaperResult {
   row: number;
@@ -45,7 +56,8 @@ export interface PaperResult {
   domestic: boolean;
   /** matched 일치, uncertain 확신 미달, not_found 후보 없음, failed 조회 실패, cancelled 취소, skipped 조회 안 함 */
   status: 'matched' | 'uncertain' | 'not_found' | 'failed' | 'cancelled' | 'skipped';
-  sources: Record<string, string>;
+  /** 출처별 결과: 상태(ok·not_found·error), 캐시 적중 여부와 원래 조회일 */
+  sources: Record<string, PaperSource>;
   similarity?: number;
   /** 이 논문 행에 나온 규칙 ID */
   rules: string[];
@@ -66,6 +78,15 @@ export interface Report {
   };
   file: { name: string; size: number };
   formYear: number | null;
+  /** 적용한 양식과 계산된 기준값 */
+  form?: {
+    year: number;
+    label: string;
+    period_default: { start: string; end: string };
+    period_mar_feb: { start: string; end: string };
+    staff_count_date: string;
+    paper_year: number;
+  };
   supported: boolean;
   findings: Finding[];
   summary: { ERROR: number; WARNING: number; INFO: number; bySheet: Record<string, { ERROR: number; WARNING: number; INFO: number }> };

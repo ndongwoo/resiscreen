@@ -7,14 +7,15 @@
 import type { Level, Report } from '../engine/report.ts';
 import type { JournalList } from '../engine/journals.ts';
 import { IdbCache } from '../engine/biblio/cache.ts';
-import rulesJson from '../../rules/2026.json';
+import { LATEST } from './rulesets.ts';
+import { resolveReference } from '../engine/reference.ts';
 import type { FromWorker, Stage, ToWorker } from './protocol.ts';
-import { printableHtml, renderFindings, renderSummary } from './ui.ts';
+import { printableHtml, renderFindings, renderPapers, renderSummary, type RecheckHandler } from './ui.ts';
 import { checkContact } from './contact.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-const RULES = rulesJson as { reference: { large_file_mb: number }; biblio: { mailto: string } };
-const LARGE_MB = RULES.reference.large_file_mb;
+const LARGE_MB = resolveReference(LATEST).large_file_mb;
+const DEFAULT_CONTACT = String((LATEST.biblio as { mailto?: string } | undefined)?.mailto ?? '');
 
 const fileInput = $<HTMLInputElement>('file');
 const drop = $<HTMLLabelElement>('drop');
@@ -35,7 +36,7 @@ const contact = $<HTMLInputElement>('contact');
 const rememberContact = $<HTMLInputElement>('remember-contact');
 const contactDelete = $<HTMLButtonElement>('contact-delete');
 const contactStatus = $<HTMLParagraphElement>('contact-status');
-contact.placeholder = `예: ${RULES.biblio.mailto}`;
+contact.placeholder = `예: ${DEFAULT_CONTACT}`;
 
 let worker: Worker | null = null;
 let picked: File | null = null;
@@ -197,7 +198,28 @@ function showError(message: string) {
 function shownLevels(): Set<Level> {
   return new Set([...document.querySelectorAll<HTMLInputElement>('#filters input:checked')].map((i) => i.value as Level));
 }
-$('filters').addEventListener('change', () => lastReport && renderFindings($('findings'), lastReport, shownLevels()));
+let busyRow: number | null = null;
+const recheck: RecheckHandler = {
+  get enabled() {
+    return !running;
+  },
+  get busyRow() {
+    return busyRow;
+  },
+  onRecheck(row: number) {
+    if (running || busyRow !== null) return;
+    busyRow = row;
+    renderResults();
+    send({ type: 'recheck', rows: [row] });
+  },
+};
+function renderResults() {
+  if (!lastReport) return;
+  renderSummary($('summary'), lastReport);
+  renderPapers($('papers'), lastReport, recheck);
+  renderFindings($('findings'), lastReport, shownLevels(), recheck);
+}
+$('filters').addEventListener('change', () => renderResults());
 
 function download(name: string, data: BlobPart, type: string) {
   const url = URL.createObjectURL(new Blob([data], { type }));
@@ -224,14 +246,23 @@ function onWorker(m: FromWorker) {
       updateStart();
       lastReport = m.report;
       lastXlsx = m.xlsx;
-      setStage('done');
-      cancel.classList.add('hidden');
-      resultCard.classList.remove('hidden');
-      renderSummary($('summary'), m.report);
-      renderFindings($('findings'), m.report, shownLevels());
-      resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      busyRow = null;
+      if (!m.recheck) {
+        setStage('done');
+        cancel.classList.add('hidden');
+        resultCard.classList.remove('hidden');
+      }
+      renderResults();
+      if (!m.recheck) resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
       break;
     case 'error':
+      if (busyRow !== null) {
+        // 다시 조회 실패: 기존 결과는 그대로 두고 알린다
+        busyRow = null;
+        renderResults();
+        cacheStatus.textContent = `다시 조회하지 못했습니다: ${m.message}`;
+        break;
+      }
       showError(`처리 중 오류가 났습니다: ${m.message}`);
       break;
     case 'cacheCleared':

@@ -10,7 +10,7 @@ interface Period {
 }
 
 function periodOf(ctx: Context, key: string): Period {
-  const p = (ctx.rules.reference as Record<string, unknown>)[key] as Period | undefined;
+  const p = (ctx.rules.reference as unknown as Record<string, unknown>)[key] as Period | undefined;
   if (!p) throw new Error(`기준 기간이 없습니다: ${key}`);
   return p;
 }

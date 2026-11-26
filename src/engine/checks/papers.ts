@@ -116,6 +116,10 @@ export interface PaperStageOptions {
   journals: JournalLists;
   signal?: AbortSignal;
   onProgress?: (done: number, total: number) => void;
+  /** 이 행만 다시 검사(다시 조회). 시트 전체 안내(조회 끔·SCIE 생략)는 내지 않는다 */
+  onlyRows?: number[];
+  /** 캐시를 무시하고 다시 조회 */
+  bypassCache?: boolean;
 }
 
 export interface PaperStageResult {
@@ -174,7 +178,8 @@ export async function runPaperStage(ctx: Context, opts: PaperStageOptions): Prom
     const rule = rules.get(check);
     if (rule) res.findings.push(makeFinding(rule, f));
   };
-  const papers = paperRows(ctx);
+  const only = opts.onlyRows ? new Set(opts.onlyRows) : null;
+  const papers = paperRows(ctx).filter((p) => !only || only.has(p.row));
   if (!papers.length) return res;
   const at = (p: PaperRow) => `${c.columns['title']}${p.row}`;
   const claims = c.claims;
@@ -185,8 +190,8 @@ export async function runPaperStage(ctx: Context, opts: PaperStageOptions): Prom
   /** 국내지: KCI 등재(후보)지·유관학회지로 기재했거나 목록에서 저널명이 찾아지는 경우 */
   const isDomestic = (p: PaperRow) => isKciClaim(p) || Boolean(related?.find([], [p.journal]) ?? kci?.find([], [p.journal]));
 
-  if (!opts.client) emit('lookup_off', { sheet: c.sheet });
-  if (!scie && papers.some((p) => (claims['scie'] ?? []).includes(p.claim))) emit('scie_skip', { sheet: c.sheet });
+  if (!only && !opts.client) emit('lookup_off', { sheet: c.sheet });
+  if (!only && !scie && papers.some((p) => (claims['scie'] ?? []).includes(p.claim))) emit('scie_skip', { sheet: c.sheet });
 
   // 1단계: 외부 조회(출처별 요청 간격 안에서 여러 논문을 동시에)
   const looks: (LookupResult | null)[] = papers.map(() => null);
@@ -197,7 +202,11 @@ export async function runPaperStage(ctx: Context, opts: PaperStageOptions): Prom
     opts.onProgress?.(0, papers.length);
     await pool(papers, opts.client.settings.paper_concurrency ?? 3, async (p, i) => {
       res.attempted++;
-      const look = await opts.client!.lookup({ title: p.title, journal: p.journal, doi: p.doi, claimedYear: p.claimedYear, domestic: domestic[i]! }, opts.signal);
+      const look = await opts.client!.lookup(
+        { title: p.title, journal: p.journal, doi: p.doi, claimedYear: p.claimedYear, domestic: domestic[i]!, paperYear: ctx.rules.reference.paper_year },
+        opts.signal,
+        { bypassCache: opts.bypassCache },
+      );
       looks[i] = look;
       if (look.status === 'cancelled') res.cancelled = true;
       if (look.status === 'failed' || look.status === 'cancelled') res.failed++;
@@ -205,6 +214,8 @@ export async function runPaperStage(ctx: Context, opts: PaperStageOptions): Prom
       opts.onProgress?.(++done, papers.length);
     });
     res.bySource = opts.client.snapshot();
+    // 항목 수 상한을 넘으면 오래된 것부터 지운다
+    await opts.client.cache.prune(opts.client.settings.cache_max_entries ?? 2000);
   }
 
   // 2단계: 논문별 판단(입력 순서대로)
@@ -292,7 +303,9 @@ export async function runPaperStage(ctx: Context, opts: PaperStageOptions): Prom
       claim: p.claim,
       domestic: domesticListed[i]!,
       status: look ? look.status : 'skipped',
-      sources: Object.fromEntries((look?.sources ?? []).map((s) => [s.source, s.error ? `${s.status}:${s.error}` : s.status])),
+      sources: Object.fromEntries(
+        (look?.sources ?? []).map((s) => [s.source, { status: s.status, ...(s.error ? { error: s.error } : {}), cache: s.cache ?? 'fresh', ...(s.fetchedAt ? { fetchedAt: s.fetchedAt } : {}) }]),
+      ),
       similarity: look?.best?.similarity,
       rules: [...new Set(res.findings.slice(before).map((f) => f.ruleId))],
     });

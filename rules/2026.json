@@ -48,18 +48,9 @@
     ]
   },
   "reference": {
-    "period_default": {
-      "start": "2025-01-01",
-      "end": "2025-12-31"
-    },
-    "period_mar_feb": {
-      "start": "2025-03-01",
-      "end": "2026-02-28"
-    },
-    "staff_count_date": "2025-09-30",
-    "paper_year": 2025,
     "paper_year_note": "가이드라인 원문에 '발간일자(2024년)' 표기가 있어 확인 중. 확정 전까지 설정값으로 둔다.",
-    "large_file_mb": 150
+    "large_file_mb": 150,
+    "_note": "실적 기간·3~2월 기간·전문의 수 기준일·논문 연도는 form.year에서 자동 계산한다(Y-1년 1~12월, Y-1년 3월~Y년 2월 말일, Y-1년 9/30, Y-1). 다르게 정해야 하면 여기에 값을 직접 적는다(적은 값이 우선)"
   },
   "biblio": {
     "mailto": "entsoc@korl.or.kr",
@@ -91,7 +82,14 @@
       "pubmed": 2
     },
     "source_rps_note": "실측(2026-11-26): Crossref 제목 검색은 헤더상 초당 3건이지만 초당 2건·동시 2개에서 429가 반복됨. 초당 1.5건·동시 1개에서 재시도 0. PubMed는 키 없이 초당 3건 한도라 2건",
-    "pubmed_email": "entsoc@korl.or.kr"
+    "pubmed_email": "entsoc@korl.or.kr",
+    "cache_ttl": {
+      "formal": 30,
+      "epub": 3,
+      "not_found": 1
+    },
+    "cache_ttl_note": "결과 종류별 유효 기간(일): 정식 출판(권·호·쪽 등 근거 있음) 30, Epub·온라인 선출판 3, 찾지 못함(후보 없음·일치 없음) 1. 네트워크 오류·시간 초과·취소는 저장하지 않음",
+    "cache_max_entries": 2000
   },
   "surgery_sheets": [
     {
@@ -1163,5 +1161,5 @@
       "kci_aliases": "data/journals/kci_aliases.json"
     }
   },
-  "rules_version": "2026.5.1"
+  "rules_version": "2026.6.0"
 }
