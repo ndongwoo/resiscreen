@@ -95,6 +95,15 @@
         },
         "_note": {
           "type": "string"
+        },
+        "eval_may1": {
+          "$ref": "#/definitions/date"
+        },
+        "prev_oct1": {
+          "$ref": "#/definitions/date"
+        },
+        "feb_end": {
+          "$ref": "#/definitions/date"
         }
       }
     },
@@ -346,7 +355,8 @@
   "definitions": {
     "a1": {
       "type": "string",
-      "pattern": "^[A-Z]{1,3}[0-9]+$"
+      "pattern": "^([A-Z]{1,3}|\\{[^{}]+\\})[0-9]+$",
+      "description": "셀 주소. '전체' 시트는 열 문자 대신 {항목코드|머리글}을 쓸 수 있다(예: {A-2-1|② 정원책정 지도전문의 수}6)"
     },
     "col": {
       "type": "string",
@@ -354,7 +364,7 @@
     },
     "qref": {
       "type": "string",
-      "pattern": "^('[^']+'|[^'!]+)![A-Z]{1,3}[0-9]+(:[A-Z]{1,3}[0-9]+)?$"
+      "pattern": "^('[^']+'|[^'!]+)!([A-Z]{1,3}|\\{[^{}]+\\})[0-9]+(:([A-Z]{1,3}|\\{[^{}]+\\})[0-9]+)?$"
     },
     "date": {
       "type": "string",

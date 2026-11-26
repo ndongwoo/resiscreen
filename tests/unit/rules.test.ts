@@ -64,9 +64,10 @@ describe('required', () => {
     expect(f.map((x) => x.cell)).toEqual(['K7']);
     expect(f[0]!.itemCode).toBe('A-2-3');
   });
-  it('예외 칸(B-6, GH6)은 빈칸이어도 결과 없음', async () => {
+  it('B-6 칸은 빈칸이어도 결과 없음, GH6(수료자 수) 빈칸은 WARNING', async () => {
     const r = await run(patch('전체', { EF7: undefined, EM7: undefined, GH6: undefined }));
-    expect(r.findings.filter((f) => f.level !== 'INFO')).toEqual([]);
+    expect(r.findings.filter((f) => f.level !== 'INFO').map((f) => `${f.level}|${f.ruleId}|${f.cell}`)).toEqual(['WARNING|S-GH6|GH6']);
+    expect(r.findings.find((f) => f.ruleId === 'S-GH6')!.message).toContain('당해년도 수료자 수 입력 확인');
   });
   it('조건부: CV6=0이면 CW7 빈칸 허용, CV6>0이면 ERROR', async () => {
     expect(by((await run(patch('전체', { CV6: 0, CW7: undefined }))).findings, 'S-REQ-SEL-COND')).toHaveLength(0);

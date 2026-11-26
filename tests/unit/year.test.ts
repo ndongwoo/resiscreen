@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { lastDayOfFeb, resolveReference, type RuleSet } from '../../src/engine/rules.ts';
 import { checkWorkbook } from '../../src/engine/index.ts';
 import { buildXlsx } from '../helpers/build_xlsx.ts';
-import { syntheticForm } from '../helpers/synthetic_form.ts';
+import { resolveForLayout, syntheticForm } from '../helpers/synthetic_form.ts';
 import { loadFormulas, loadRules } from '../helpers/load.ts';
 
 const rules = loadRules();
@@ -16,6 +16,9 @@ describe('form.year에서 기준값 계산', () => {
       period_mar_feb: { start: '2025-03-01', end: '2026-02-28' },
       staff_count_date: '2025-09-30',
       paper_year: 2025,
+      eval_may1: '2026-05-01',
+      prev_oct1: '2025-10-01',
+      feb_end: '2026-02-28',
       large_file_mb: 150,
     });
   });
@@ -23,6 +26,7 @@ describe('form.year에서 기준값 계산', () => {
     expect(lastDayOfFeb(2028)).toBe(29);
     expect(resolveReference({ form: { ...rules.form, year: 2028 } }).period_mar_feb).toEqual({ start: '2027-03-01', end: '2028-02-29' });
     expect(resolveReference({ form: { ...rules.form, year: 2027 } }).period_mar_feb.end).toBe('2027-02-28');
+    expect(resolveReference({ form: { ...rules.form, year: 2028 } })).toMatchObject({ feb_end: '2028-02-29', eval_may1: '2028-05-01', prev_oct1: '2027-10-01' });
   });
   it('reference에 직접 적은 값이 우선한다', () => {
     const r = resolveReference({ form: rules.form, reference: { paper_year: 2024, staff_count_date: '2025-10-01' } });
@@ -42,7 +46,8 @@ describe('양식 연도로 규칙 선택', () => {
     expect(r.findings.filter((f) => f.level !== 'INFO')).toEqual([]);
   });
   it('2026 서명에는 연도를 구분하는 칸이 둘 있다(표지 B4, 전체 H4)', () => {
-    const yearCells = rules.form.signature.filter((s) => /20\d\d/.test(s.contains ?? s.equals ?? ''));
+    const sig = resolveForLayout(rules.form.signature);
+    const yearCells = sig.filter((s) => /20\d\d/.test(s.contains ?? s.equals ?? ''));
     expect(yearCells.map((s) => `${s.sheet}!${s.cell}`)).toEqual(['표지!B4', '전체!H4']);
   });
   it('서명이 같은 두 연도 규칙이 동시에 맞으면 고르지 않고 ERROR로 멈춘다', async () => {
@@ -60,5 +65,30 @@ describe('양식 연도로 규칙 선택', () => {
     const r = await checkWorkbook({ bytes, fileName: 'x.xlsx', rules: [other, rules], formulas: { 2026: formulas } });
     expect(r.supported).toBe(false);
     expect(r.findings.map((f) => f.ruleId)).toEqual(['S-FORM-01']);
+  });
+});
+
+import { headerDate } from '../../src/engine/checks/period.ts';
+
+describe('양식 머리글의 기준일', () => {
+  it('날짜 문구 읽기', () => {
+    expect(headerDate('평가년도 전문의 현황 (2026년 5/1일 기준)')).toBe('2026-05-01');
+    expect(headerDate('b. 2025년 10/ 1일 실제 근무 전공의 총 수')).toBe('2025-10-01');
+    expect(headerDate('평가년도 (2026년) 2월말일 기준 전공의 근무 현원')).toBe('2026-02-28');
+    expect(headerDate('평가년도 (2028년) 2월 말일')).toBe('2028-02-29');
+    expect(headerDate('기준일 없음')).toBeNull();
+  });
+  it('2026 합성 양식은 0건, 머리글 연도를 바꾸면 WARNING', async () => {
+    const ok = await checkWorkbook({ bytes: await buildXlsx(syntheticForm(rules, formulas)), fileName: 'x.xlsx', rules, formulas });
+    expect(ok.findings.filter((f) => f.ruleId === 'S-DATE-HDR')).toEqual([]);
+    const cell = resolveForLayout('{A-3-1}');
+    const bad = await checkWorkbook({ bytes: await buildXlsx(syntheticForm(rules, formulas, { patch: { 전체: { [`${cell}4`]: '평가년도 전공의 현황 (2025년 5/1일)' } } })), fileName: 'x.xlsx', rules, formulas });
+    const f = bad.findings.filter((x) => x.ruleId === 'S-DATE-HDR');
+    expect(f).toHaveLength(1);
+    expect(f[0]!.detail).toMatchObject({ found: '2025-05-01', expected: '2026-05-01' });
+  });
+  it('결과의 적용 양식에 기준일이 모두 들어간다', async () => {
+    const r = await checkWorkbook({ bytes: await buildXlsx(syntheticForm(rules, formulas)), fileName: 'x.xlsx', rules, formulas });
+    expect(r.form).toMatchObject({ eval_may1: '2026-05-01', prev_oct1: '2025-10-01', feb_end: '2026-02-28', staff_count_date: '2025-09-30' });
   });
 });

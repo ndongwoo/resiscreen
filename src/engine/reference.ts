@@ -18,6 +18,12 @@ export interface ResolvedReference {
   staff_count_date: string;
   /** 논문 실적 연도: Y-1 */
   paper_year: number;
+  /** 평가년도 5월 1일(A-2-5, A-3-1, C-1-1) */
+  eval_may1: string;
+  /** 평가 전년도 10월 1일(A-3-2, B-2-3 b, E-1) */
+  prev_oct1: string;
+  /** 평가년도 2월 말일(E-2, 윤년이면 29일) */
+  feb_end: string;
   /** 큰 파일 확인 기준(MB) */
   large_file_mb: number;
 }
@@ -35,6 +41,9 @@ export function resolveReference(rules: Pick<RuleSet, 'form' | 'reference'>): Re
     period_mar_feb: { start: `${py}-03-01`, end: `${y}-02-${String(lastDayOfFeb(y)).padStart(2, '0')}` },
     staff_count_date: `${py}-09-30`,
     paper_year: py,
+    eval_may1: `${y}-05-01`,
+    prev_oct1: `${py}-10-01`,
+    feb_end: `${y}-02-${String(lastDayOfFeb(y)).padStart(2, '0')}`,
     large_file_mb: 150,
   };
   const r = rules.reference ?? {};
@@ -43,6 +52,9 @@ export function resolveReference(rules: Pick<RuleSet, 'form' | 'reference'>): Re
     period_mar_feb: (r.period_mar_feb as Period | undefined) ?? computed.period_mar_feb,
     staff_count_date: (r.staff_count_date as string | undefined) ?? computed.staff_count_date,
     paper_year: (r.paper_year as number | undefined) ?? computed.paper_year,
+    eval_may1: (r.eval_may1 as string | undefined) ?? computed.eval_may1,
+    prev_oct1: (r.prev_oct1 as string | undefined) ?? computed.prev_oct1,
+    feb_end: (r.feb_end as string | undefined) ?? computed.feb_end,
     large_file_mb: (r.large_file_mb as number | undefined) ?? computed.large_file_mb,
   };
 }

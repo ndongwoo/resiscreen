@@ -24,6 +24,9 @@ export async function reportToXlsx(report: Report): Promise<Uint8Array> {
           ['실적 기간', `${report.form.period_default.start} ~ ${report.form.period_default.end}`],
           ['3~2월 항목 기간', `${report.form.period_mar_feb.start} ~ ${report.form.period_mar_feb.end}`],
           ['전문의 수 기준일', report.form.staff_count_date],
+          ['평가 전년도 10/1 기준일', report.form.prev_oct1],
+          ['평가년도 5/1 기준일', report.form.eval_may1],
+          ['평가년도 2월 말일', report.form.feb_end],
           ['논문 연도', report.form.paper_year],
         ] as [string, string | number][])
       : []),

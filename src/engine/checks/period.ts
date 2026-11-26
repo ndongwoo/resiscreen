@@ -77,3 +77,37 @@ export function structureLimit(ctx: Context, rule: Rule): Finding[] {
     .filter((s) => ctx.wb.sheetByName.has(s))
     .map((s) => makeFinding(rule, { sheet: s }));
 }
+
+/** 머리글 문구에서 첫 날짜를 읽는다: 'YYYY년 M/D일', 'YYYY년 M월 D일', '(YYYY년) 2월말일' */
+export function headerDate(text: string): string | null {
+  const t = text.replace(/\s+/g, ' ');
+  const pad = (n: number) => String(n).padStart(2, '0');
+  let m = /(\d{4})\s*년\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*일/.exec(t);
+  if (m) return `${m[1]}-${pad(+m[2]!)}-${pad(+m[3]!)}`;
+  m = /(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일/.exec(t);
+  if (m) return `${m[1]}-${pad(+m[2]!)}-${pad(+m[3]!)}`;
+  m = /(\d{4})\s*년\s*\)?\s*(\d{1,2})\s*월\s*말\s*일/.exec(t);
+  if (m) {
+    const y = +m[1]!;
+    const mo = +m[2]!;
+    return `${y}-${pad(mo)}-${pad(new Date(Date.UTC(y, mo, 0)).getUTCDate())}`;
+  }
+  return null;
+}
+
+/** 양식 머리글에 적힌 기준일이 조사 연도에서 계산한 기준일과 같은지 */
+export function headerDates(ctx: Context, rule: Rule): Finding[] {
+  const t = rule.target;
+  const sheet = ctx.wb.sheetByName.get(t.sheet);
+  if (!sheet) return [];
+  const out: Finding[] = [];
+  for (const chk of t.checks as { item: string; cell: string; ref: string }[]) {
+    if (!/^[A-Z]{1,3}\d+$/.test(chk.cell)) continue; // 항목을 찾지 못함(S-COL-01이 따로 알림)
+    const raw = sheet.cells.get(chk.cell)?.value;
+    const found = headerDate(raw === null || raw === undefined ? '' : String(raw));
+    const expected = (ctx.rules.reference as unknown as Record<string, string>)[chk.ref];
+    if (!found || !expected || found === expected) continue;
+    out.push(makeFinding(rule, { sheet: t.sheet, cell: chk.cell, itemCode: chk.item, message: `${rule.message} (${chk.item}: 양식 ${found}, 점검 기준 ${expected})`, detail: { found, expected, ref: chk.ref } }));
+  }
+  return out;
+}

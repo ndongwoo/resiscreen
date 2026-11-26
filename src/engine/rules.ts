@@ -98,18 +98,44 @@ export function isReferenced(ctx: Context, sheet: string, ref: string): boolean 
 }
 
 /** 양식 서명 확인. 맞지 않는 항목 목록을 돌려준다(빈 배열이면 지원 양식). */
-export function checkSignature(wb: Workbook, rs: RuleSet): string[] {
-  const misses: string[] = [];
+export interface SignatureMiss {
+  sheet: string;
+  cell: string;
+  expected: string;
+  actual: string;
+}
+
+/** 양식 서명 확인. 맞지 않는 칸 목록(위치·기대 문구·실제 값 앞부분)을 돌려준다(빈 배열이면 지원 양식). */
+export function signatureMisses(wb: Workbook, rs: RuleSet): SignatureMiss[] {
+  const misses: SignatureMiss[] = [];
   for (const sig of rs.form.signature) {
-    const v = asText(getCell(wb, sig.sheet, sig.cell)).replace(/\s+/g, ' ').trim();
+    const valid = /^[A-Z]{1,3}\d+$/.test(sig.cell); // 항목 키를 찾지 못했으면 '{…}'가 남아 있다
+    const cell = valid ? getCell(wb, sig.sheet, sig.cell) : undefined;
+    const v = asText(cell).replace(/\s+/g, ' ').trim();
     const ok =
+      valid &&
       wb.sheetByName.has(sig.sheet) &&
-      !isBlank(getCell(wb, sig.sheet, sig.cell)) &&
+      !isBlank(cell) &&
       (sig.equals === undefined || v === sig.equals) &&
       (sig.contains === undefined || v.includes(sig.contains));
-    if (!ok) misses.push(`${sig.sheet}!${sig.cell}`);
+    if (!ok)
+      misses.push({
+        sheet: sig.sheet,
+        cell: sig.cell,
+        expected: sig.equals !== undefined ? `'${sig.equals}'` : `'${sig.contains}' 포함`,
+        actual: !wb.sheetByName.has(sig.sheet) ? '(시트 없음)' : !valid ? '(항목을 찾을 수 없음)' : v ? v.slice(0, 30) + (v.length > 30 ? '…' : '') : '(빈칸)',
+      });
   }
   return misses;
+}
+
+export function checkSignature(wb: Workbook, rs: RuleSet): string[] {
+  return signatureMisses(wb, rs).map((m) => `${m.sheet}!${m.cell}`);
+}
+
+export function signatureMessage(misses: SignatureMiss[]): string {
+  const list = misses.map((m) => `${m.sheet} ${m.cell}: 기대 ${m.expected}, 실제 '${m.actual}'`).join(' / ');
+  return `지원하지 않는 양식입니다. 양식을 확인하는 칸이 기대값과 다릅니다(${list}). 학회에서 배포한 양식 원본을 사용하세요.`;
 }
 
 export function makeFinding(rule: Rule, f: Omit<Finding, 'ruleId' | 'basis' | 'level' | 'message'> & Partial<Pick<Finding, 'level' | 'message' | 'basis'>>): Finding {
@@ -139,6 +165,7 @@ function handlerFor(rule: Rule): Handler | null {
     case 'period':
       if (t.check === 'year_missing_limit') return period.yearMissingLimit;
       if (t.check === 'structure_limit') return period.structureLimit;
+      if (t.check === 'header_date') return period.headerDates;
       return period.dateRange;
     case 'threshold':
       return clinical.threshold;
@@ -190,12 +217,12 @@ export interface RunResult {
 export function runRules(ctx: Context): RunResult {
   const rs = ctx.rules;
   const sigRule = rs.rules.find((r) => r.target.signature);
-  const misses = checkSignature(ctx.wb, rs);
+  const misses = signatureMisses(ctx.wb, rs);
   if (misses.length > 0) {
     const rule = sigRule ?? ({ id: 'S-FORM-01', level: 'ERROR', message: '지원하지 않는 양식입니다.', basis: '' } as Rule);
     return {
       supported: false,
-      findings: [makeFinding(rule, { sheet: misses[0]!.split('!')[0]!, cell: misses[0]!.split('!')[1], detail: { mismatched: misses } })],
+      findings: [makeFinding(rule, { sheet: misses[0]!.sheet, cell: /^[A-Z]{1,3}\d+$/.test(misses[0]!.cell) ? misses[0]!.cell : undefined, message: signatureMessage(misses), detail: { mismatched: misses } })],
     };
   }
   const findings: Finding[] = [];

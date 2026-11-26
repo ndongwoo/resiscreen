@@ -86,6 +86,9 @@ export interface Report {
     period_mar_feb: { start: string; end: string };
     staff_count_date: string;
     paper_year: number;
+    eval_may1: string;
+    prev_oct1: string;
+    feb_end: string;
   };
   supported: boolean;
   findings: Finding[];

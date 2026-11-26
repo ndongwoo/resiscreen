@@ -4,7 +4,33 @@
  */
 import type { BookSpec, CellSpec, SheetSpec } from './build_xlsx.ts';
 import type { FormFormulas, RuleSet } from '../../src/engine/rules.ts';
-import { expandAll, parseSheetRef } from '../../src/engine/xlsx/refs.ts';
+import { expandAll, parseCoord, parseSheetRef } from '../../src/engine/xlsx/refs.ts';
+import { buildItemIndex, resolveDeep } from '../../src/engine/columns.ts';
+import type { Cell, Sheet } from '../../src/engine/xlsx/workbook.ts';
+import { existsSync, readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/** 2026 양식 '전체' 1~5행 머리글(양식 원문) */
+export function layout2026(): Record<string, string> {
+  // 소스(tests/helpers)와 컴파일 결과(dist-node/tests/helpers) 어디서든 저장소 루트의 파일을 찾는다
+  const here = dirname(fileURLToPath(import.meta.url));
+  const p = [join(here, '../../data/forms/2026_layout.json'), join(here, '../../../data/forms/2026_layout.json')].find((x) => existsSync(x))!;
+  return (JSON.parse(readFileSync(p, 'utf8')) as { cells: Record<string, string> }).cells;
+}
+
+/** 합성 양식 기준으로 규칙의 {항목 키}를 열 문자로 바꾼다 */
+export function resolveForLayout<T>(value: T, cells: Record<string, string> = layout2026()): T {
+  const sheet: Sheet = { name: '전체', index: 0, state: 'visible', cells: new Map(), merged: [], hyperlinks: [], embedded: [], drawingObjects: 0 };
+  for (const [ref, v] of Object.entries(cells)) {
+    const { row, col } = parseCoord(ref);
+    sheet.cells.set(ref, { ref, row, col, value: v, type: 's', numFmt: 'General', isDate: false } as Cell);
+  }
+  const missing = new Set<string>();
+  const out = resolveDeep(buildItemIndex(sheet), value, missing);
+  if (missing.size) throw new Error(`합성 양식에서 찾지 못한 항목: ${[...missing].join(', ')}`);
+  return out;
+}
 
 export interface SyntheticOptions {
   /** 시트별 셀 덮어쓰기(null이면 삭제) */
@@ -15,7 +41,10 @@ export interface SyntheticOptions {
 
 const FAKE_NAMES = ['가*나', '다*라', '마*바', '사*아', '자*차', '카*타', '파*하'];
 
-export function syntheticForm(rules: RuleSet, formulas: FormFormulas, opts: SyntheticOptions = {}): BookSpec {
+export function syntheticForm(rawRules: RuleSet, rawFormulas: FormFormulas, opts: SyntheticOptions = {}): BookSpec {
+  const layout = layout2026();
+  const rules = resolveForLayout(rawRules, layout);
+  const formulas = resolveForLayout(rawFormulas, layout);
   const sheets = new Map<string, Record<string, CellSpec>>();
   const sh = (name: string) => {
     if (!sheets.has(name)) sheets.set(name, {});
@@ -35,6 +64,8 @@ export function syntheticForm(rules: RuleSet, formulas: FormFormulas, opts: Synt
   sh('A-10-3-d')['A1'] = 'A-10-3-d';
 
   const whole = sh('전체');
+  // 양식 머리글(1~5행)
+  for (const [ref, v] of Object.entries(layout)) whole[ref] = v;
   // 자동계산 칸: 우선 모두 수식 1로
   for (const c of formulas.sheets['전체']?.cells ?? []) whole[c] = { f: '1', v: 1 };
   // 선택형(7행)·직접입력(6행)
@@ -42,6 +73,7 @@ export function syntheticForm(rules: RuleSet, formulas: FormFormulas, opts: Synt
   for (const c of rule('S-REQ-SEL-COND').target.cells) whole[c] = '예';
   for (const c of rule('S-REQ-SEL-COND2').target.cells) whole[c] = '100%';
   for (const c of expandAll(rule('S-REQ-DIRECT').target.ranges)) whole[c] = 1;
+  for (const c of rule('S-GH6').target.cells) whole[c] = 1; // E-3-5 수료자 수
 
   // 인원: 정원 연차별 1,1,1,1 + 군파견 0 → 합 4, 지도전문의 N=8 → 최댓값(1)·합계(4) 모두 ≤ N-3(5)
   const a32 = sh('A-3-2');
@@ -144,4 +176,43 @@ export function syntheticForm(rules: RuleSet, formulas: FormFormulas, opts: Synt
 
   const specs: SheetSpec[] = [...sheets.entries()].map(([name, cells]) => ({ name, cells, oles: oles.get(name) }));
   return { sheets: specs };
+}
+
+/**
+ * '전체' 시트에 빈 열을 끼워 넣는다(2027 양식처럼). after 열 뒤에 새 열이 생기고 그 뒤 열은 오른쪽으로 한 칸씩 밀린다.
+ * '전체' 안의 수식 참조도 같이 옮긴다. headers는 새 열의 머리글(행 번호 → 문구).
+ */
+export function insertColumns(spec: BookSpec, inserts: { after: string; headers: Record<number, string> }[]): BookSpec {
+  const out = structuredClone(spec);
+  const whole = out.sheets.find((s) => s.name === '전체')!;
+  // 오른쪽 삽입부터 처리해야 앞쪽 위치가 흔들리지 않는다
+  const sorted = [...inserts].sort((a, b) => colIdx(b.after) - colIdx(a.after));
+  for (const ins of sorted) {
+    const at = colIdx(ins.after);
+    const shift = (ref: string) => ref.replace(/^(\$?)([A-Z]{1,3})(\$?)(\d+)$/, (_m, a: string, c: string, b: string, r: string) => `${a}${colIdx(c) > at ? colName(colIdx(c) + 1) : c}${b}${r}`);
+    const moved: Record<string, (typeof whole.cells)[string]> = {};
+    for (const [ref, v] of Object.entries(whole.cells)) {
+      let val = v;
+      if (val && typeof val === 'object' && 'f' in val && val.f) val = { ...val, f: val.f.replace(/(?<![A-Za-z!'])(\$?[A-Z]{1,3}\$?\d+)/g, (m) => shift(m)) };
+      moved[shift(ref)] = val;
+    }
+    for (const [row, text] of Object.entries(ins.headers)) moved[`${colName(at + 1)}${row}`] = text;
+    whole.cells = moved;
+  }
+  return out;
+}
+
+function colIdx(c: string): number {
+  let n = 0;
+  for (const ch of c) n = n * 26 + ch.charCodeAt(0) - 64;
+  return n;
+}
+function colName(n: number): string {
+  let s = '';
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
 }

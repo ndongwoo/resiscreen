@@ -1,6 +1,7 @@
 /** 엔진 진입점. 브라우저(Web Worker)·Node CLI·테스트가 같은 함수를 쓴다. DOM 의존 없음. */
 import { loadWorkbook, WorkbookError, type LoadOptions } from './xlsx/workbook.ts';
 import { buildReferenceIndex, checkSignature, rulesFingerprint, runRules, withResolvedReference, type Context, type FormFormulas, type RuleSet } from './rules.ts';
+import { buildItemIndex, resolveDeep, type ItemColumn } from './columns.ts';
 import { sortFindings, summarize, type Finding, type Report } from './report.ts';
 import { runPaperStage } from './checks/papers.ts';
 import type { BiblioClient } from './biblio/client.ts';
@@ -93,9 +94,15 @@ export async function checkWorkbookSession(input: CheckInput): Promise<{ report:
   }
   const t1 = now();
   input.onProgress?.('structure');
+  // '전체' 시트의 열을 항목 코드·머리글로 찾기 위한 색인(규칙의 {코드|머리글} 자리를 열 문자로 바꾼다)
+  const whole = wb.sheetByName.get('전체');
+  const itemIndex: ItemColumn[] = whole ? buildItemIndex(whole) : [];
+  const withSignature = (r: RuleSet): RuleSet => ({ ...r, form: { ...r.form, signature: resolveDeep(itemIndex, r.form.signature, new Set()) } });
+  const resolvedCandidates = candidates.map(withSignature);
   // 양식 연도 식별: signature가 맞는 규칙을 쓴다. 맞는 것이 없으면 가장 최근 규칙으로 '지원하지 않는 양식' ERROR.
   // 두 연도 이상이 동시에 맞으면 어느 쪽도 고르지 않고 멈춘다(서명에 연도 구분 칸이 빠진 규칙 파일 방지)
-  const matching = candidates.filter((r) => checkSignature(wb, r).length === 0);
+  const matchingIdx = resolvedCandidates.map((r, i) => (checkSignature(wb, r).length === 0 ? i : -1)).filter((i) => i >= 0);
+  const matching = matchingIdx.map((i) => candidates[i]!);
   if (matching.length > 1) {
     const years = matching.map((r) => r.form.year).sort();
     const findings: Finding[] = [
@@ -110,11 +117,39 @@ export async function checkWorkbookSession(input: CheckInput): Promise<{ report:
     ];
     return { report: { ...base, formYear: null, supported: false, findings, summary: summarize(findings) }, session: null };
   }
-  const chosen = matching[0] ?? candidates[0]!;
+  const chosenRaw = matching[0] ?? candidates[0]!;
+  // 규칙 전체의 항목 키를 이 파일의 열로 바꾼다. 못 찾은 항목은 ERROR로 알리고 그 항목을 쓰는 규칙만 건너뛴다
+  const missing = new Set<string>();
+  const resolved = resolveDeep(itemIndex, chosenRaw, missing);
+  const unresolved = (v: unknown) => [...missing].some((k) => JSON.stringify(v).includes(`{${k}}`));
+  const chosen: RuleSet =
+    matching.length && missing.size
+      ? {
+          ...resolved,
+          rules: resolved.rules.filter((r) => !unresolved(r.target) && !unresolved(r.exceptions ?? [])),
+          surgery_sheets: resolved.surgery_sheets.map((s) => (unresolved(s.summary) ? { ...s, summary: '' } : s)),
+        }
+      : matching.length
+        ? resolved
+        : withSignature(chosenRaw);
   const rules = withResolvedReference(chosen);
-  base.tool = toolInfo(input, chosen);
-  const ctx: Context = { wb, rules, formulas: formulasFor(input, chosen.form.year), referenced: buildReferenceIndex(wb) };
+  base.tool = toolInfo(input, chosenRaw);
+  const rawFormulas = formulasFor(input, chosenRaw.form.year);
+  const formulas = rawFormulas ? resolveDeep(itemIndex, rawFormulas, missing) : undefined;
+  if (formulas?.sheets['전체']?.cells) formulas.sheets['전체'].cells = formulas.sheets['전체'].cells.filter((c) => /^[A-Z]{1,3}\d+$/.test(c));
+  const ctx: Context = { wb, rules, formulas, referenced: buildReferenceIndex(wb) };
   const res = runRules(ctx);
+  if (res.supported && missing.size) {
+    for (const key of [...missing].sort())
+      res.findings.push({
+        level: 'ERROR',
+        ruleId: 'S-COL-01',
+        sheet: '전체',
+        message: `양식에서 항목 ${key}를 찾을 수 없습니다. 열을 지우거나 머리글(3~5행)을 고치지 않았는지 확인하세요. 이 항목을 쓰는 점검은 건너뛰었습니다.`,
+        basis: '규칙은 열 문자 대신 항목 코드(3행)와 머리글(4·5행)로 열을 찾는다(src/engine/columns.ts)',
+        detail: { key },
+      });
+  }
   const t2 = now();
   let all = res.findings;
   let biblio = base.biblio;
@@ -140,15 +175,18 @@ export async function checkWorkbookSession(input: CheckInput): Promise<{ report:
     ...base,
     biblio,
     papers,
-    formYear: res.supported ? chosen.form.year : null,
+    formYear: res.supported ? chosenRaw.form.year : null,
     form: res.supported
       ? {
-          year: chosen.form.year,
-          label: chosen.form.label,
+          year: chosenRaw.form.year,
+          label: chosenRaw.form.label,
           period_default: ref.period_default,
           period_mar_feb: ref.period_mar_feb,
           staff_count_date: ref.staff_count_date,
           paper_year: ref.paper_year,
+          eval_may1: ref.eval_may1,
+          prev_oct1: ref.prev_oct1,
+          feb_end: ref.feb_end,
         }
       : undefined,
     supported: res.supported,

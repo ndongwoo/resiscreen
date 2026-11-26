@@ -206,7 +206,7 @@ export function sumMatch(ctx: Context, rule: Rule): Finding[] {
   const t = rule.target;
   const pairs: { summary: string; sheet_total: string }[] = [...(t.pairs ?? [])];
   if (t.pairs_from_surgery_sheets) {
-    for (const s of ctx.rules.surgery_sheets) pairs.unshift({ summary: s.summary, sheet_total: `'${s.sheet}'!${s.total}` });
+    for (const s of ctx.rules.surgery_sheets) if (s.summary) pairs.unshift({ summary: s.summary, sheet_total: `'${s.sheet}'!${s.total}` });
   }
   const out: Finding[] = [];
   for (const p of pairs) {

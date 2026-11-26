@@ -17,7 +17,7 @@ export const LEVEL_LABEL: Record<Level, string> = { ERROR: '제출 전 반드시
 export function formLine(report: Report): string {
   const f = report.form;
   if (!f) return '적용 양식: 지원하지 않는 양식';
-  return `적용 양식: ${f.year}년도 · 실적 기간 ${f.period_default.start}~${f.period_default.end} · 3~2월 항목 ${f.period_mar_feb.start}~${f.period_mar_feb.end} · 전문의 수 기준일 ${f.staff_count_date} · 논문 연도 ${f.paper_year}`;
+  return `적용 양식: ${f.year}년도 · 실적 기간 ${f.period_default.start}~${f.period_default.end} · 3~2월 항목 ${f.period_mar_feb.start}~${f.period_mar_feb.end} · 전문의 수 기준일 ${f.staff_count_date} · 평가 전년도 10/1 ${f.prev_oct1} · 평가년도 5/1 ${f.eval_may1} · 평가년도 2월 말일 ${f.feb_end} · 논문 연도 ${f.paper_year}`;
 }
 
 const STATUS_LABEL: Record<PaperResult['status'], string> = {
