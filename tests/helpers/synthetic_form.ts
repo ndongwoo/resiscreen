@@ -141,6 +141,9 @@ export function syntheticForm(rawRules: RuleSet, rawFormulas: FormFormulas, opts
   b23['F3'] = 2;
   b23['F13'] = { f: 'SUM(F3:F12)', v: 2 };
   whole['DS6'] = 2;
+  // B-2-3 a/b = DS6/DT6, 점수(DU6)는 a/b 구간으로(1 미만 → 4)
+  whole['DU8'] = { f: 'DS6/DT6', v: 2 / 4 };
+  whole['DU6'] = { f: 'IF(DU8>=3,1,IF(AND(DU8<3,DU8>=2),2,IF(AND(DU8<2,DU8>=1),3,IF(DU8<1,4,""))))', v: 4 };
 
   // 논문
   const p = sh('논문');

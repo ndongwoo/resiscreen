@@ -1,0 +1,83 @@
+# 규칙 ID 목록
+
+> 2026 규칙 2026.8.0 기준. `npm run gen:docs`로 다시 만든다(tools/rules_doc.ts). 결과 화면·결과 엑셀·CLI JSON의 '규칙' 칸에 이 ID가 나온다.
+
+## 이전 ID → 새 ID
+
+이전 결과 파일(엑셀·JSON)과 비교할 때 이 표로 맞춰 본다. 바뀐 ID는 다시 쓰지 않는다.
+
+| 이전 ID | 새 ID | 바뀐 규칙 버전 | 이유 |
+|---|---|---|---|
+| A-6-SUM-01 | S-SUM-01 | 2026.8.0 | A-6 수술 시트뿐 아니라 A-3-2 정원·B-2-3 참석 횟수·논문 점수 합계까지 대조하는 '전체' 시트 공통 점검이라 S-(구조) 계열로 옮김 |
+
+## 규칙 파일(rules/2026.json)
+
+| ID | 종류 | 단계 | 사용 | 내용 |
+|---|---|---|---|---|
+| S-FORM-01 | required | ERROR | 켬 | 지원하지 않는 양식입니다. 2026년도 수련실태조사 양식인지 확인하세요. |
+| S-SHEET-01 | required | ERROR | 켬 | 양식에 있어야 할 시트가 없습니다. 시트 이름을 바꾸거나 지우지 마세요. |
+| S-REQ-SEL | required | ERROR | 켬 | '입력방법(클릭 후 값 선택)' 칸이 비어 있습니다. 해당 칸을 눌러 값을 선택하세요. |
+| B-6-EPORTFOLIO | required | INFO | 끔 | B-6(e-Portfolio) 항목 |
+| S-REQ-SEL-COND | required | ERROR | 켬 | 출산전후 휴가 사용 인원(CV6)이 있으면 'b. 90일 사용 여부'를 선택해야 합니다. |
+| S-REQ-SEL-COND2 | required | ERROR | 켬 | E-1 참여율을 선택하세요. |
+| S-FX7-NA | required | WARNING | 켬 | E-1 참여율이 비어 있습니다. 해당 전공의가 없으면 '해당없음'을 선택하세요. |
+| S-REQ-DIRECT | required | ERROR | 켬 | '직접입력' 칸(6행)이 비어 있습니다. 숫자를 입력하세요(없으면 0). |
+| S-GH6 | required | WARNING | 켬 | 당해년도 수료자 수 입력 확인: E-3-5 수료자 칸이 비어 있습니다. |
+| S-WRONGROW-01 | dtype | ERROR | 켬 | 숫자가 안내 문구 칸(7행)에 입력되어 있습니다. 바로 위 칸(6행)에 입력해야 합니다. |
+| S-DTYPE-NUM | dtype | ERROR | 켬 | 숫자만 입력해야 하는 칸에 글자가 들어 있습니다(예: 'O년 O개월'처럼 쓰지 말고 숫자만). |
+| S-DATE-HDR | period | WARNING | 켬 | 양식에 적힌 기준일과 점검 기준일이 다릅니다. 학회에서 배포한 올해 양식을 쓰는지 확인하세요. |
+| S-FORMULA-01 | dtype | WARNING | 켬 | 자동계산(회색) 칸의 수식이 값으로 바뀌었거나 지워졌습니다. 수기로 고친 것이라면 이유를 확인하세요. |
+| S-EXCEL-ERR | dtype | WARNING | 켬 | 엑셀 오류값(#DIV/0!, #REF! 등)이 저장되어 있습니다. 입력 칸이 비었거나 수식이 깨졌을 수 있습니다. |
+| S-SUM-01 | sum_match | ERROR | 켬 | '전체' 시트 값과 증빙 시트 합계가 다릅니다. |
+| A-6-ROWS-01 | rows_vs_total | WARNING | 켬 | 증빙 시트의 환자 행 수와 총 건수 칸 값이 다릅니다. 양측 수술(2건) 등 정당한 차이인지 확인하세요. |
+| A-6-ESS-SIDES | rows_vs_total | ERROR | 켬 | 부비동내시경수술: 소계(R+L) 열의 합과 총 건수가 다릅니다. |
+| A-6-DATE-LIMIT | period | INFO | 켬 | 수술 날짜가 'O월 O일' 형식이라 연도가 없어 2025년 1~12월 기간 검사를 자동으로 할 수 없습니다(연도가 적힌 행만 검사). |
+| A-6-DATE-01 | period | WARNING | 켬 | 수술(검사) 날짜가 2025년 1~12월 밖입니다. |
+| A-6-PRIV-01 | evidence | WARNING | 켬 | 개인정보 가림 처리 확인: 환자 이름 가운데가 '*'로 가려지지 않은 것으로 보입니다. |
+| A-6-MIN-01 | threshold | WARNING | 켬 | 과락 기준 건수 미달입니다. 파견수련보고서로 충족 여부 확인이 필요합니다. |
+| A-6-DUP-01 | evidence | INFO | 켬 | 증빙 시트에 환자 식별 칸이 없어 같은 환자 중복(한쪽만 인정)을 자동으로 확인할 수 없습니다. |
+| A-6-PATH-01 | required | WARNING | 켬 | 두경부 양성종양: 진단명·수술명이 비었거나, 진단명이 병리 소견 없이 'Neck mass'처럼 적혀 있습니다. 불인정될 수 있습니다. |
+| A-6-OSA-01 | required | WARNING | 켬 | 수면무호흡: PSG 시행일이 비어 있습니다. |
+| A-6-OSA-02 | required | WARNING | 켬 | 수면무호흡: 양압기 처방일과 수술일이 모두 비어 있습니다. PSG 후 양압기 또는 UPPP 이상 수술이 있어야 인정됩니다. |
+| A-6-EVID-01 | evidence | WARNING | 켬 | A-6-2·A-6-3: 의무기록실 또는 원무팀 확인서 첨부가 보이지 않습니다. 별도 파일로 제출했다면 무시하세요. |
+| A-2-2-RECALC | recalc | WARNING | 켬 | A-2-2: 선택한 값이 n ≤ N-3 계산(n = 연차별 전공의 정원 중 최댓값)과 다릅니다. 이동수련자가 있으면 다를 수 있으니 확인하세요. |
+| B-5-RECALC | recalc | ERROR | 켬 | B-5: 전공의 총 정원(현재 인원 아님)으로 나눈 값과 다릅니다. |
+| C-4-RECALC | recalc | WARNING | 켬 | C-4: 2025년 9월 30일 기준 전문의 총수(전임의 1년차 포함)로 나눈 1인당 논문점수와 다릅니다. |
+| B-4-3-RECALC | recalc | ERROR | 켬 | B-4-3: 논문 점수(B-4-2)를 전공의 총 정원(A-3-2)으로 나눈 값과 다릅니다. |
+| B-2-3-RECALC | recalc | ERROR | 켬 | B-2-3 a/b: 외부 학술대회 총 참석 횟수(a)를 10/1 기준 실제 근무 전공의 수(b)로 나눈 값과 다릅니다. |
+| P-PERIOD-MARFEB | period | WARNING | 켬 | B-2-3: 학술대회 일시가 2025년 3월~2026년 2월 밖입니다. |
+| P-PERIOD-LIMIT | period | INFO | 켬 | A-3-3(파견기간 '0개월')·A-10-3(월별 당직표)은 날짜 칸이 없어 2025년 3월~2026년 2월 기간 검사를 자동으로 할 수 없습니다. |
+| B-2-3-ROWS | required | WARNING | 켬 | 외부 학술대회: 참석 인원은 있는데 행사명·일시·참가자 이름이 비어 있습니다. |
+| B-2-3-KIND | evidence | WARNING | 켬 | 외부 학술대회: 정기학술대회가 아닐 수 있는 행사(심포지엄·연수회·세미나·포럼·집담회 등)입니다. 참석 횟수에 들어가는지 확인하세요. |
+| B-2-3-INTL | evidence | INFO | 켬 | 국제학술대회 인정 조건 확인: 국내 개최 국제학회는 대한의사협회 승인 국제학회만 인정되며, 명찰이나 등록영수증을 PDF로 B-2-3 시트에 첨부해야 합니다. |
+| B-2-3-DUP | evidence | WARNING | 켬 | 외부 학술대회: 같은 학술대회를 날짜(일차)별로 나눠 적은 것으로 보입니다. 한 번만 세는지 확인하세요. |
+| E-2-B | required | INFO | 끔 | E-2-b 이러닝 수료 규정 충족률 |
+| P-REQ-01 | paper | ERROR | 켬 | 논문: 저널종류(D열)가 비었거나 양식의 선택지가 아닙니다. 점수 자동계산에 쓰이는 칸입니다. |
+| P-REQ-02 | paper | WARNING | 켬 | 논문: 저널명 또는 출판일이 비어 있습니다. |
+| P-COUNT-01 | paper | WARNING | 켬 | 논문: 저자 수(총 제1저자 수·해당 병원 제1저자 수·총 교신저자 수·해당 병원 교신저자 수)를 확인하세요. |
+| P-QYEAR-01 | paper | WARNING | 켬 | 논문: 기재한 출판일이 평가 대상 연도(reference.paper_year)가 아닙니다. 정식 출판일 기준으로 확인하세요. |
+| P-BIB-OFF | paper | INFO | 켬 | 외부 서지 조회를 사용하지 않아 논문 서지(정식 출판·연도·형식·등재)는 확인하지 않았습니다. |
+| P-BIB-FAIL | paper | WARNING | 켬 | 외부 서지 확인 불가: Crossref·PubMed 조회가 실패했습니다(네트워크 차단·시간 초과 등). 직접 확인하세요. |
+| P-BIB-UNSURE | paper | WARNING | 켬 | 자동 확인 불가: 서지 DB에서 확신할 만큼 일치하는 논문을 찾지 못했습니다. 아래 후보가 같은 논문인지 확인하세요. |
+| P-DOI-01 | paper | WARNING | 켬 | 논문: DOI 형식이 맞지 않거나 Crossref에서 찾을 수 없습니다. |
+| P-DOI-02 | paper | WARNING | 켬 | 논문: 기재한 DOI의 서지 제목이 엑셀의 제목과 다릅니다. |
+| P-EPUB-01 | paper | WARNING | 켬 | 정식 출판 전 논문은 불인정될 수 있음: 권·호·쪽(또는 논문번호)이 확인되지 않는 선출판(Epub/Online ahead of print)입니다. |
+| P-YEAR-01 | paper | WARNING | 켬 | 정식 출판일이 평가 대상 연도가 아닙니다. 실적 기간 밖일 수 있으니 확인하세요. |
+| P-TYPE-01 | paper | WARNING | 켬 | 불인정 형식: 서지 유형이 Letter·Editorial·Comment입니다. Letter to the editor는 인정되지 않을 수 있습니다. |
+| P-TYPE-02 | paper | WARNING | 켬 | 원저로 기재했으나 서지 유형이 종설·증례입니다. 한이인지 원저 가중치가 적용되지 않을 수 있습니다. |
+| P-JOUR-KCI | paper | WARNING | 켬 | 국내지로 기재했으나 KCI 등재(후보)지·유관학회지 목록에서 찾지 못했습니다. 인정 대상 학술지인지 확인하세요. |
+| P-JOUR-SCIE | paper | WARNING | 켬 | SCI/SCIE로 기재했으나 불러온 SCIE 목록에서 찾지 못했습니다(또는 ESCI 단독). 등재 여부를 확인하세요. |
+| P-JOUR-SCIE-SKIP | paper | INFO | 켬 | SCIE 목록 미등록으로 확인 생략: SCIE 저널 목록을 불러오면 SCI/SCIE 기재 논문의 등재 여부를 확인합니다. |
+| P-AUTH-01 | paper | WARNING | 켬 | 공동 제1저자(동등 기여) 표시가 서지에 있는데 총 제1저자 수가 1로 적혀 있습니다. 표시 누락인지 확인하세요. |
+| P-PRED-01 | paper | INFO | 켬 | 수련위원회 심의 대상이 될 수 있음: 적절한 논문 형식을 갖추지 못한 짧은 증례(예: ENT Journal Clinic 계열 1~2쪽)로 보입니다. |
+| P-EVID-01 | evidence | WARNING | 켬 | 이 논문 행에 표지 PDF 첨부가 보이지 않습니다. 칼라 인쇄물로 따로 제출했다면 무시하세요. |
+
+## 코드가 직접 내는 결과
+
+| ID | 단계 | 내용 |
+|---|---|---|
+| S-FILE-01 | ERROR | 파일을 읽지 못함(손상·암호·형식 오류) |
+| S-FORM-02 | ERROR | 두 연도 이상의 양식 서명에 모두 맞아 연도를 판별할 수 없음 |
+| S-COL-01 | ERROR | 양식에서 항목의 열을 찾을 수 없음(그 점검만 건너뜀) |
+| S-COL-02 | ERROR | 비슷한 머리글이 여럿이라 항목의 열을 하나로 정할 수 없음(그 점검만 건너뜀) |
+| S-COL-03 | INFO | 항목을 비슷한 머리글로 찾음(규칙 문구 / 양식 문구) |

@@ -21,7 +21,7 @@ writeFileSync(
   await buildXlsx(
     syntheticForm(rules, formulas, {
       patch: {
-        전체: { K7: undefined, H6: undefined, H7: 6, FK6: '9년 3개월', DS6: 5, EA6: 0.5 },
+        전체: { K7: undefined, H6: undefined, H7: 6, FK6: '9년 3개월', DS6: 5, DU8: { f: 'DS6/DT6', v: 5 / 4 }, EA6: 0.5 },
         'k 수면무호흡': { C5: undefined, E6: undefined },
         'd T&A': { D5: '가나다' },
         'a 고실': { C5: { v: 45300, s: 2 } },

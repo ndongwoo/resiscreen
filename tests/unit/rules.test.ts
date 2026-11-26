@@ -1,5 +1,8 @@
 /** 규칙 타입별 단위 테스트(합성 통합문서). 실제 병원 파일을 쓰지 않는다. */
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkWorkbook } from '../../src/engine/index.ts';
 import { validateRuleSet } from '../../src/engine/schema.ts';
 import type { Finding } from '../../src/engine/report.ts';
@@ -127,10 +130,10 @@ describe('dtype', () => {
 describe('sum_match', () => {
   it('전체 값과 수술 시트 총 건수가 다르면 ERROR', async () => {
     const r = await run(patch('전체', { BS6: 79 }));
-    expect(by(r.findings, 'A-6-SUM-01').map((f) => f.cell)).toEqual(['BS6']);
+    expect(by(r.findings, 'S-SUM-01').map((f) => f.cell)).toEqual(['BS6']);
   });
   it('DS6(직접입력)과 B-2-3 합계', async () => {
-    expect(by((await run(patch('전체', { DS6: 5 }))).findings, 'A-6-SUM-01').map((f) => f.cell)).toEqual(['DS6']);
+    expect(by((await run(patch('전체', { DS6: 5 }))).findings, 'S-SUM-01').map((f) => f.cell)).toEqual(['DS6']);
   });
 });
 
@@ -252,8 +255,45 @@ describe('recalc', () => {
     const r = await run(patch('전체', { Q6: { f: "'A-3-2'!C9", v: 3 }, EB6: { f: 'BR6/Q6', v: 800 / 3 } }));
     expect(by(r.findings, 'B-5-RECALC').map((x) => x.cell)).toContain('Q6');
   });
+  it('B-4-3: 논문 점수 ÷ 전공의 총 정원(EA6 = DZ6/Q6)과 다르면 ERROR', async () => {
+    const r = await run(patch('전체', { EA6: { f: 'DZ6/DT6', v: 99 } }));
+    const f = by(r.findings, 'B-4-3-RECALC');
+    expect(f.map((x) => [x.level, x.cell])).toEqual([['ERROR', 'EA6']]);
+    expect(f[0]!.message).toContain('입력 99');
+  });
+  it('B-2-3 a/b: 참석 횟수 ÷ 10/1 근무 전공의 수(DU8 = DS6/DT6)와 다르면 ERROR', async () => {
+    const r = await run(patch('전체', { DU8: 3 })); // 2/4 = 0.5인데 3을 덮어씀
+    const f = by(r.findings, 'B-2-3-RECALC');
+    expect(f.map((x) => [x.level, x.cell])).toEqual([['ERROR', 'DU8']]);
+    expect(f[0]!.detail).toMatchObject({ expected: 0.5, observed: 3 });
+    // 분모가 0이면 재계산하지 않는다(#DIV/0!은 다른 점검이 본다)
+    expect(by((await run(patch('전체', { DT6: { f: "'A-3-2'!C9", v: 0 }, DU8: '#DIV/0!' }))).findings, 'B-2-3-RECALC')).toHaveLength(0);
+  });
   it('C-4: 논문 점수 ÷ 전문의 수', async () => {
     expect(by((await run(patch('전체', { FO6: { f: 'DZ6/I6', v: 2 / 8 } }))).findings, 'C-4-RECALC')).toHaveLength(1);
+  });
+});
+
+describe('생성 문서', () => {
+  const doc = (name: string) => readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../docs', name), 'utf8');
+  it('ITEM_COVERAGE.md: 한 항목에 같은 점검이 두 번 나오지 않는다(DU·GA 6·8행 수식)', () => {
+    const rows = doc('ITEM_COVERAGE.md').split('\n').filter((l) => /^\| \d+ \| [A-Z]+ \|/.test(l));
+    expect(rows).toHaveLength(190);
+    for (const l of rows) {
+      const checks = l.split(' | ').at(-1)!.replace(/ \|$/, '').split('; ');
+      expect(new Set(checks).size, l).toBe(checks.length);
+    }
+    const du = rows.find((l) => l.includes('| DU |'))!;
+    expect(du).toContain('자동계산 수식 훼손 WARNING [S-FORMULA-01] (6·8행)');
+    expect(du).toContain('[B-2-3-RECALC]');
+    expect(rows.find((l) => l.includes('| EA |'))).toContain('[B-4-3-RECALC]');
+  });
+  it('RULES.md: 규칙 파일의 모든 ID와 이전 ID 매핑이 있고, 이전 ID는 규칙에 남아 있지 않다', () => {
+    const d = doc('RULES.md');
+    for (const r of rules.rules) expect(d).toContain(`| ${r.id} |`);
+    expect(d).toContain('| A-6-SUM-01 | S-SUM-01 |');
+    expect(rules.rules.some((r) => r.id === 'A-6-SUM-01')).toBe(false);
+    expect(d).toContain(rules.rules_version);
   });
 });
 

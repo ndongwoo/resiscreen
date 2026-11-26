@@ -65,6 +65,7 @@ npm run check -- tests/fixtures/synthetic/합성_2026_오류포함.xlsx --out ou
 
 - `npm run typecheck`: 타입 검사
 - `npm run check:fixtures`: 공개하면 안 되는 엑셀 파일이 추적되는지 검사
+- `npm run gen:docs`: 규칙을 바꾼 뒤 `docs/ITEM_COVERAGE.md`(항목별 점검 범위)와 `docs/RULES.md`(규칙 ID 목록, 이전 ID → 새 ID 매핑)를 다시 만든다. 테스트가 두 문서가 규칙과 맞는지 확인한다
 - `npm run eval:recall`: 평가 전·후 파일로 재현율 계산(비공개 파일이 있을 때만)
 - `npm run bench:read -- <direct|exceljs> <파일>`: 엑셀 읽기 성능 비교
 
