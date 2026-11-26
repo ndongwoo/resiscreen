@@ -1,0 +1,461 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ResiScreen 규칙 파일",
+  "description": "연도별 양식 정의와 검사 규칙. 셀 주소와 기준 수치는 이 파일에만 둔다.",
+  "type": "object",
+  "required": [
+    "form",
+    "reference",
+    "surgery_sheets",
+    "rules"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "form": {
+      "type": "object",
+      "required": [
+        "year",
+        "label",
+        "signature",
+        "required_sheets"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": 2020
+        },
+        "label": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "sheet",
+              "cell"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "sheet": {
+                "type": "string"
+              },
+              "cell": {
+                "$ref": "#/definitions/a1"
+              },
+              "contains": {
+                "type": "string"
+              },
+              "equals": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required_sheets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "required": [
+        "period_default",
+        "period_mar_feb",
+        "staff_count_date",
+        "paper_year",
+        "large_file_mb"
+      ],
+      "properties": {
+        "period_default": {
+          "$ref": "#/definitions/period"
+        },
+        "period_mar_feb": {
+          "$ref": "#/definitions/period"
+        },
+        "staff_count_date": {
+          "$ref": "#/definitions/date"
+        },
+        "paper_year": {
+          "type": "integer",
+          "minimum": 2000
+        },
+        "paper_year_note": {
+          "type": "string"
+        },
+        "large_file_mb": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    },
+    "biblio": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mailto": {
+          "type": "string"
+        },
+        "mailto_note": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "crossref",
+              "pubmed"
+            ]
+          }
+        },
+        "domestic_prefer": {
+          "enum": [
+            "crossref",
+            "pubmed"
+          ]
+        },
+        "max_requests_per_second": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 3,
+          "description": "출처(Crossref, PubMed)별 초당 최대 요청 수"
+        },
+        "crossref_max_concurrent": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "backoff_ms": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "cache_ttl_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "title_match": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min_similarity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "require_year_match": {
+              "type": "boolean"
+            },
+            "require_journal_match": {
+              "type": "boolean"
+            },
+            "below_threshold": {
+              "type": "string"
+            }
+          }
+        },
+        "paper_concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "source_rps": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "crossref": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 3
+            },
+            "pubmed": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 3
+            }
+          }
+        },
+        "source_rps_note": {
+          "type": "string"
+        },
+        "pubmed_email": {
+          "type": "string"
+        }
+      }
+    },
+    "surgery_sheets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sheet",
+          "label",
+          "summary",
+          "total"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "sheet": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/definitions/qref"
+          },
+          "total": {
+            "$ref": "#/definitions/a1"
+          },
+          "side_sum_col": {
+            "$ref": "#/definitions/col"
+          },
+          "date_col": {
+            "$ref": "#/definitions/col"
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/rule"
+      }
+    },
+    "papers": {
+      "type": "object",
+      "required": [
+        "sheet",
+        "header_row",
+        "first_row",
+        "columns",
+        "claim_options",
+        "claims"
+      ],
+      "properties": {
+        "sheet": {
+          "type": "string"
+        },
+        "header_row": {
+          "type": "integer"
+        },
+        "first_row": {
+          "type": "integer"
+        },
+        "last_row": {
+          "type": "integer"
+        },
+        "columns": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/col"
+          }
+        },
+        "doi_header": {
+          "type": "string"
+        },
+        "claim_options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "claims": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "letter_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "non_original_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "predatory": {
+          "type": "object"
+        },
+        "journal_lists": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rules_version": {
+      "type": "string",
+      "pattern": "^\\d{4}\\.\\d+\\.\\d+$",
+      "description": "규칙 파일 버전(연도.마일스톤/개정.수정). 규칙을 고치면 올린다"
+    }
+  },
+  "definitions": {
+    "a1": {
+      "type": "string",
+      "pattern": "^[A-Z]{1,3}[0-9]+$"
+    },
+    "col": {
+      "type": "string",
+      "pattern": "^[A-Z]{1,3}$"
+    },
+    "qref": {
+      "type": "string",
+      "pattern": "^('[^']+'|[^'!]+)![A-Z]{1,3}[0-9]+(:[A-Z]{1,3}[0-9]+)?$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "period": {
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "$ref": "#/definitions/date"
+        },
+        "end": {
+          "$ref": "#/definitions/date"
+        }
+      }
+    },
+    "level": {
+      "enum": [
+        "ERROR",
+        "WARNING",
+        "INFO"
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "level",
+        "enabled",
+        "target",
+        "message",
+        "basis"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9-]*$"
+        },
+        "type": {
+          "enum": [
+            "required",
+            "dtype",
+            "sum_match",
+            "period",
+            "threshold",
+            "recalc",
+            "rows_vs_total",
+            "evidence",
+            "paper"
+          ]
+        },
+        "level": {
+          "$ref": "#/definitions/level"
+        },
+        "level_if_unreferenced": {
+          "$ref": "#/definitions/level"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "target": {
+          "type": "object"
+        },
+        "message": {
+          "type": "string",
+          "minItems": 1
+        },
+        "message_referenced": {
+          "type": "string"
+        },
+        "basis": {
+          "type": "string"
+        },
+        "todo": {
+          "type": "string"
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "cells",
+              "basis",
+              "basis_kind"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "cells": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "basis": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "basis_kind": {
+                "enum": [
+                  "guideline",
+                  "form_wording",
+                  "faq",
+                  "none"
+                ]
+              },
+              "moved_to": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

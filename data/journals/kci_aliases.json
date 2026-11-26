@@ -1,0 +1,21 @@
+{
+  "note": "KCI 목록의 공식 이름과 병원들이 흔히 쓰는 이름이 다른 경우의 별칭. 키는 KCI 목록의 ISSN 또는 eISSN, 값은 별칭 목록. 필요하면 학회 담당자가 GitHub 웹 화면에서 추가한다.",
+  "as_of": "2026-11-26",
+  "aliases": {
+    "2092-6529": [
+      "대한이비인후과학회지",
+      "한이인지",
+      "Korean J Otorhinolaryngol-Head Neck Surg",
+      "Korean Journal of Otorhinolaryngology-Head and Neck Surgery",
+      "KJORL-HNS"
+    ],
+    "1976-8710": [
+      "Clin Exp Otorhinolaryngol",
+      "CEO"
+    ],
+    "2093-9175": [
+      "대한수면학회지",
+      "Sleep Med Res"
+    ]
+  }
+}

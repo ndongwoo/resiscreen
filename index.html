@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      외부로 나가는 요청은 서지 조회 두 곳(Crossref, NCBI PubMed)뿐이다.
+      스크립트·스타일·Worker는 모두 같은 출처의 번들 파일이다(런타임 CDN 없음).
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src https://api.crossref.org https://eutils.ncbi.nlm.nih.gov; base-uri 'none'; form-action 'none'; manifest-src 'self'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>수련실태조사서 사전 점검</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./src/web/style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <h1>수련실태조사서 사전 점검 <span class="tag">ResiScreen</span></h1>
+      <p class="sub">대한이비인후과학회 전공의 수련실태조사서(2026년 양식)를 학회에 내기 전에 이 컴퓨터에서 점검합니다.</p>
+    </header>
+
+    <main>
+      <section class="notice" aria-label="안내">
+        <p><strong>파일은 이 컴퓨터의 브라우저 안에서만 처리되며 외부로 전송되지 않습니다.</strong> 논문 확인을 위해 논문 제목(DOI가 있으면 DOI)과 입력하신 연락처 이메일만 Crossref·PubMed에 보냅니다. 병원명, 저자·직원 이름, 환자 정보는 보내지 않습니다. 이 결과는 참고용이며 공식 심사 결과가 아닙니다.</p>
+      </section>
+
+      <section class="card" id="input-card">
+        <h2>1. 파일 선택</h2>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+          <span class="drop-main">여기에 엑셀 파일(.xlsx)을 끌어 놓거나 눌러서 고르세요</span>
+          <span class="drop-sub" id="file-name">매크로 파일(.xlsm)과 예전 형식(.xls)은 받지 않습니다</span>
+        </label>
+
+        <div class="options">
+          <label class="check"><input type="checkbox" id="use-biblio" checked /> 외부 서지 조회 사용 <span class="small">(Crossref·PubMed. 끄면 논문 서지 확인만 건너뜁니다)</span></label>
+          <div class="contact" id="contact-box">
+            <label for="contact">연락처 이메일 <span class="small">(서지 조회에 필수. Crossref가 요청한 연락처로만 쓰고 결과에는 넣지 않습니다)</span></label>
+            <div class="row">
+              <input type="email" id="contact" inputmode="email" autocomplete="email" spellcheck="false" required />
+              <label class="check"><input type="checkbox" id="remember-contact" /> 이 브라우저에 기억</label>
+              <button type="button" class="btn ghost hidden" id="contact-delete">저장된 이메일 삭제</button>
+            </div>
+            <p class="status" id="contact-status"></p>
+          </div>
+        </div>
+
+        <details class="scie" id="scie-box">
+          <summary>SCIE 저널 목록 불러오기 <span class="small">(선택 사항)</span></summary>
+          <p class="small">학회에서 받은 SCIE 목록 파일(엑셀 또는 CSV)을 고르면 SCI/SCIE로 기재한 논문의 등재 여부를 확인합니다. 목록은 이 브라우저에만 저장되며 다음 방문 때 다시 씁니다.</p>
+          <div class="row">
+            <label class="btn secondary">목록 파일 고르기<input type="file" id="scie-file" accept=".xlsx,.csv,.txt" hidden /></label>
+            <button type="button" class="btn ghost" id="scie-delete" disabled>저장된 목록 삭제</button>
+          </div>
+          <p class="status" id="scie-status">불러온 목록 없음</p>
+        </details>
+
+        <div class="row">
+          <button type="button" class="btn primary" id="start" disabled>점검 시작</button>
+          <button type="button" class="btn ghost" id="clear-cache">서지 조회 캐시 지우기</button>
+          <span class="status" id="cache-status"></span>
+        </div>
+      </section>
+
+      <section class="card hidden" id="progress-card" aria-live="polite">
+        <h2>2. 진행</h2>
+        <ol class="steps" id="steps">
+          <li data-step="read">파일 읽기</li>
+          <li data-step="structure">구조 검사</li>
+          <li data-step="papers">논문 조회 <span id="paper-count"></span></li>
+          <li data-step="done">완료</li>
+        </ol>
+        <div class="bar"><div class="bar-fill" id="bar"></div></div>
+        <button type="button" class="btn ghost hidden" id="cancel">논문 조회 취소</button>
+      </section>
+
+      <section class="card hidden" id="result-card">
+        <h2>3. 결과</h2>
+        <div id="summary"></div>
+        <div class="row downloads">
+          <button type="button" class="btn primary" id="dl-xlsx">'점검결과' 엑셀 내려받기</button>
+          <button type="button" class="btn secondary" id="dl-html">인쇄용 HTML 내려받기</button>
+          <button type="button" class="btn ghost" id="print">인쇄(PDF로 저장)</button>
+        </div>
+        <fieldset class="filters" id="filters">
+          <legend>보기</legend>
+          <label class="check"><input type="checkbox" value="ERROR" checked /> ERROR</label>
+          <label class="check"><input type="checkbox" value="WARNING" checked /> WARNING</label>
+          <label class="check"><input type="checkbox" value="INFO" checked /> INFO</label>
+        </fieldset>
+        <div id="findings"></div>
+      </section>
+    </main>
+
+    <footer class="foot small">
+      판정은 하지 않습니다. 'ERROR'는 제출 전에 꼭 고칠 것, 'WARNING'은 확인을 권하는 것, 'INFO'는 참고입니다. 최종 판정은 학회 사무국과 수련위원이 합니다.
+    </footer>
+    <script type="module" src="./src/web/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "name": "resiscreen",
+  "version": "0.1.0",
+  "private": true,
+  "description": "수련실태조사서 0단계 사전 점검 도구 (브라우저 전용 정적 웹앱 + Node CLI)",
+  "type": "module",
+  "license": "UNLICENSED",
+  "bin": {
+    "resiscreen": "dist-node/src/cli/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.web.json --noEmit",
+    "build:node": "tsc -p tsconfig.build.json",
+    "build:web": "vite build",
+    "build": "npm run build:node && npm run build:web",
+    "test": "vitest run",
+    "check": "npm run build:node && node dist-node/src/cli/index.js check",
+    "validate:rules": "npm run build:node && node dist-node/tools/validate_rules.js",
+    "check:fixtures": "npm run build:node && node dist-node/tools/check_fixture_paths.js",
+    "make:synthetic": "npm run build:node && node dist-node/tools/make_synthetic.js",
+    "eval:recall": "npm run build:node && node dist-node/tools/eval_recall.js",
+    "bench:read": "npm run build:node && node dist-node/tools/bench_read.js",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "scan:private": "npm run build:node && node dist-node/tools/prepublish_scan.js"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "typescript": "^5.8.3",
+    "vite": "^6.4.6",
+    "vitest": "3.2.7"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
+  }
+}

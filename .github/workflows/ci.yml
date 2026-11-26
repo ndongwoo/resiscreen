@@ -1,0 +1,26 @@
+# 모든 push·PR에서: 타입 검사, 테스트(합성 샘플만), 규칙 스키마 검증, 금지 파일·개인정보 기본 패턴 검사, 웹 빌드
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 공개 전 검사가 이력 전체를 본다
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run validate:rules
+      - run: npm run check:fixtures
+      # 비공개 fixture가 없으므로 기본 패턴(이메일·엑셀 위치 등)만 검사한다
+      - run: npm run scan:private
+      - run: npm run build:web

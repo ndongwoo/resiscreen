@@ -1,0 +1,1167 @@
+{
+  "$schema": "./schema.json",
+  "status": "draft-m5",
+  "form": {
+    "year": 2026,
+    "label": "2026년도 수련실태조사 (2025년 1/1일~12/31일 실적)",
+    "signature": [
+      {
+        "sheet": "표지",
+        "cell": "B4",
+        "contains": "2026년도 수련실태조사"
+      },
+      {
+        "sheet": "전체",
+        "cell": "B3",
+        "equals": "A-1-1"
+      },
+      {
+        "sheet": "전체",
+        "cell": "BS3",
+        "equals": "A-6-4"
+      },
+      {
+        "sheet": "논문",
+        "cell": "B3",
+        "equals": "논문제목"
+      }
+    ],
+    "required_sheets": [
+      "전체",
+      "A-2-1",
+      "A-3-2",
+      "A-6",
+      "a 고실",
+      "b ESS",
+      "c 두경부악성",
+      "d T&A",
+      "e 비중격",
+      "f 환기관",
+      "g 외비성형술",
+      "h 갑상선",
+      "i 두경부양성",
+      "j 청각재활",
+      "k 수면무호흡",
+      "l LMS",
+      "B-2-3",
+      "논문"
+    ]
+  },
+  "reference": {
+    "period_default": {
+      "start": "2025-01-01",
+      "end": "2025-12-31"
+    },
+    "period_mar_feb": {
+      "start": "2025-03-01",
+      "end": "2026-02-28"
+    },
+    "staff_count_date": "2025-09-30",
+    "paper_year": 2025,
+    "paper_year_note": "가이드라인 원문에 '발간일자(2024년)' 표기가 있어 확인 중. 확정 전까지 설정값으로 둔다.",
+    "large_file_mb": 150
+  },
+  "biblio": {
+    "mailto": "entsoc@korl.or.kr",
+    "mailto_note": "Crossref polite pool 연락처 기본값(CLI에서 --mailto가 없을 때). 웹 화면은 사용자가 입력한 연락처를 쓴다. PubMed(E-utilities)에는 tool=resiscreen과 pubmed_email을 고정으로 보낸다. 이 값들은 공개 웹 번들에 들어간다",
+    "sources": [
+      "crossref",
+      "pubmed"
+    ],
+    "domestic_prefer": "crossref",
+    "max_requests_per_second": 2,
+    "crossref_max_concurrent": 1,
+    "retries": 3,
+    "backoff_ms": [
+      1000,
+      2000,
+      4000
+    ],
+    "timeout_ms": 15000,
+    "cache_ttl_days": 30,
+    "title_match": {
+      "min_similarity": 0.9,
+      "require_year_match": true,
+      "require_journal_match": true,
+      "below_threshold": "WARNING: 자동 확인 불가(후보 논문 표시)"
+    },
+    "paper_concurrency": 3,
+    "source_rps": {
+      "crossref": 1.5,
+      "pubmed": 2
+    },
+    "source_rps_note": "실측(2026-11-26): Crossref 제목 검색은 헤더상 초당 3건이지만 초당 2건·동시 2개에서 429가 반복됨. 초당 1.5건·동시 1개에서 재시도 0. PubMed는 키 없이 초당 3건 한도라 2건",
+    "pubmed_email": "entsoc@korl.or.kr"
+  },
+  "surgery_sheets": [
+    {
+      "sheet": "a 고실",
+      "label": "고실성형술",
+      "summary": "전체!BS6",
+      "total": "G1"
+    },
+    {
+      "sheet": "b ESS",
+      "label": "부비동내시경수술",
+      "summary": "전체!BT6",
+      "total": "I1",
+      "side_sum_col": "H"
+    },
+    {
+      "sheet": "c 두경부악성",
+      "label": "두경부악성종양근치술",
+      "summary": "전체!BU6",
+      "total": "G1"
+    },
+    {
+      "sheet": "d T&A",
+      "label": "편도·아데노이드",
+      "summary": "전체!BV6",
+      "total": "F1"
+    },
+    {
+      "sheet": "e 비중격",
+      "label": "비중격성형술",
+      "summary": "전체!BW6",
+      "total": "F1"
+    },
+    {
+      "sheet": "f 환기관",
+      "label": "환기관삽입술",
+      "summary": "전체!BX6",
+      "total": "F1"
+    },
+    {
+      "sheet": "g 외비성형술",
+      "label": "외비성형술",
+      "summary": "전체!BY6",
+      "total": "F1"
+    },
+    {
+      "sheet": "h 갑상선",
+      "label": "갑상선 적출술",
+      "summary": "전체!BZ6",
+      "total": "G1"
+    },
+    {
+      "sheet": "i 두경부양성",
+      "label": "두경부양성종양",
+      "summary": "전체!CA6",
+      "total": "H1"
+    },
+    {
+      "sheet": "j 청각재활",
+      "label": "청각재활",
+      "summary": "전체!CB6",
+      "total": "G1"
+    },
+    {
+      "sheet": "k 수면무호흡",
+      "label": "수면무호흡",
+      "summary": "전체!CC6",
+      "total": "G1",
+      "date_col": "C"
+    },
+    {
+      "sheet": "l LMS",
+      "label": "후두미세수술",
+      "summary": "전체!CD6",
+      "total": "G1"
+    }
+  ],
+  "rules": [
+    {
+      "id": "S-FORM-01",
+      "type": "required",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "signature": true
+      },
+      "message": "지원하지 않는 양식입니다. 2026년도 수련실태조사 양식인지 확인하세요.",
+      "basis": "양식 연도 식별(작업 지시 6.1)"
+    },
+    {
+      "id": "S-SHEET-01",
+      "type": "required",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "required_sheets": true
+      },
+      "message": "양식에 있어야 할 시트가 없습니다. 시트 이름을 바꾸거나 지우지 마세요.",
+      "basis": "작성법 3: '증빙입력'과 '입력서식'에 연결된 모든 시트를 작성"
+    },
+    {
+      "id": "S-REQ-SEL",
+      "type": "required",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "sheet": "전체",
+        "ranges": [
+          "B7:G7",
+          "J7:L7",
+          "S7:BP7",
+          "CE7:CS7",
+          "CX7:DI7",
+          "DM7:DO7",
+          "DQ7:DR7",
+          "EE7",
+          "EN7:FB7",
+          "FE7:FJ7",
+          "GA7"
+        ],
+        "item_code_row": 3
+      },
+      "message": "'입력방법(클릭 후 값 선택)' 칸이 비어 있습니다. 해당 칸을 눌러 값을 선택하세요.",
+      "basis": "가이드라인: 입력 값이 비어 있으면 안 됩니다. 작성법 2: '입력방법 (클릭 후 값선택)' 해당 항목 셀을 클릭하면 선택 버튼이 나오고 해당 값을 선택",
+      "exceptions": [
+        {
+          "cells": [
+            "EF7:EM7"
+          ],
+          "moved_to": "B-6-EPORTFOLIO",
+          "basis": "2026 서류심사 가이드라인 4.6) 이포트폴리오: 본사업 시작 전이라 2026년 해당 없음",
+          "basis_kind": "guideline"
+        },
+        {
+          "cells": [
+            "CW7"
+          ],
+          "moved_to": "S-REQ-SEL-COND",
+          "basis": "양식 전체!CW5 문구 'b. a 인원 모두 90일의 출산전후 휴가를 사용하였다.' — a(CV6) 인원이 있을 때만 의미가 있음",
+          "basis_kind": "form_wording"
+        },
+        {
+          "cells": [
+            "FX7"
+          ],
+          "moved_to": "S-REQ-SEL-COND2, S-FX7-NA",
+          "basis": null,
+          "basis_kind": "none",
+          "note": "FV6>0이면 ERROR(S-REQ-SEL-COND2), FV6=0이면 '해당없음' 선택 안내 WARNING(S-FX7-NA). 개발자(남동우) 판단, 학회 확인 필요(2026-11-26)"
+        },
+        {
+          "cells": [
+            "FC7:FD7",
+            "FQ7:FU7",
+            "GD7:GG7",
+            "GI7:GO7"
+          ],
+          "basis": "양식 문구: FD4 '평가위원 의견 및 제언', FQ2 'D-1. 의무기록 충실성'(FR1 '의무기록 충실성 평가'), GD2 'E-3. 전공의와 전문의 면담', GJ2 'E-4. 종합평가'. 이 칸들은 드롭다운(데이터 유효성)이 없고 7행에 평가자용 선택지 문구('양호 (1) 불량 (2)', '자유 서술')만 있음",
+          "basis_kind": "form_wording",
+          "note": "'서류 단계에서는 비워 둔다'는 명시 문구는 없음. 현지실사·평가위원 기록 칸으로 보고 검사 범위에서 뺌"
+        }
+      ]
+    },
+    {
+      "id": "B-6-EPORTFOLIO",
+      "type": "required",
+      "level": "INFO",
+      "enabled": false,
+      "target": {
+        "sheet": "전체",
+        "ranges": [
+          "EF7:EM7"
+        ]
+      },
+      "message": "B-6(e-Portfolio) 항목",
+      "basis": "2026 서류심사 가이드라인 4.6) 이포트폴리오: 실사 점수이며 본사업 시작 전이라 2026년 해당 없음"
+    },
+    {
+      "id": "S-REQ-SEL-COND",
+      "type": "required",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "sheet": "전체",
+        "cells": [
+          "CW7"
+        ],
+        "when": {
+          "cell": "CV6",
+          "op": ">",
+          "value": 0
+        }
+      },
+      "message": "출산전후 휴가 사용 인원(CV6)이 있으면 'b. 90일 사용 여부'를 선택해야 합니다.",
+      "basis": "양식 전체!CW5 'b. a 인원 모두 90일의 출산전후 휴가를 사용하였다.'"
+    },
+    {
+      "id": "S-REQ-SEL-COND2",
+      "type": "required",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "sheet": "전체",
+        "cells": [
+          "FX7"
+        ],
+        "when": {
+          "cell": "FV6",
+          "op": ">",
+          "value": 0
+        }
+      },
+      "message": "E-1 참여율을 선택하세요.",
+      "basis": "E-1 참여율 드롭다운(FX7). 전공의 수(FV6)가 있으면 선택해야 함"
+    },
+    {
+      "id": "S-FX7-NA",
+      "type": "required",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "전체",
+        "cells": [
+          "FX7"
+        ],
+        "when": {
+          "cell": "FV6",
+          "op": "<=",
+          "value": 0
+        }
+      },
+      "message": "E-1 참여율이 비어 있습니다. 해당 전공의가 없으면 '해당없음'을 선택하세요.",
+      "basis": "FX7 드롭다운 선택지에 '해당없음'이 있음(100%, 75%이상~100%미만, 50%이상~75%미만, 해당없음). 개발자(남동우) 판단, 학회 확인 필요(2026-11-26)"
+    },
+    {
+      "id": "S-REQ-DIRECT",
+      "type": "required",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "sheet": "전체",
+        "ranges": [
+          "H6:I6",
+          "M6:N6",
+          "CV6",
+          "DJ6:DL6",
+          "DP6",
+          "DS6",
+          "DV6:DX6",
+          "FK6",
+          "FW6",
+          "FY6:FZ6"
+        ],
+        "item_code_row": 3
+      },
+      "message": "'직접입력' 칸(6행)이 비어 있습니다. 숫자를 입력하세요(없으면 0).",
+      "basis": "가이드라인: 입력 값이 비어 있으면 안 됩니다. 작성법 2: 직접입력이라고 된 부분만 실제 숫자를 입력",
+      "exceptions": [
+        {
+          "cells": [
+            "GH6"
+          ],
+          "basis": "양식 전체!GD2 'E-3. 전공의와 전문의 면담' 구역(GD~GO)에 속함. 같은 구역의 GD~GG·GI~GO는 선택지 없는 실사용 칸",
+          "basis_kind": "form_wording",
+          "note": "명시적으로 '서류 단계 빈칸 허용'이라는 문구는 없음"
+        }
+      ]
+    },
+    {
+      "id": "S-WRONGROW-01",
+      "type": "dtype",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "sheet": "전체",
+        "ranges_from_rule": "S-REQ-DIRECT",
+        "check": "number_in_guide_row",
+        "guide_row": 7
+      },
+      "message": "숫자가 안내 문구 칸(7행)에 입력되어 있습니다. 바로 위 칸(6행)에 입력해야 합니다.",
+      "basis": "작성법 2: 직접입력이라고 된 부분만 실제 숫자 입력. 실제 심사에서도 안내 문구 칸(7행)에 적은 숫자를 6행으로 옮긴 사례가 있음"
+    },
+    {
+      "id": "S-DTYPE-NUM",
+      "type": "dtype",
+      "level": "ERROR",
+      "enabled": true,
+      "level_if_unreferenced": "WARNING",
+      "target": {
+        "sheet": "전체",
+        "ranges_from_rule": "S-REQ-DIRECT",
+        "dtype": "nonneg_number",
+        "accept_numeric_text": true
+      },
+      "message": "숫자만 입력해야 하는 칸에 글자가 들어 있습니다(예: 'O년 O개월'처럼 쓰지 말고 숫자만).",
+      "message_referenced": "이 칸은 자동계산 수식에 쓰이므로 글자가 있으면 점수가 계산되지 않습니다.",
+      "basis": "작성법 2: 직접입력 칸은 실제 숫자 입력. 다른 수식이 이 칸을 참조하면 ERROR, 아니면 WARNING(개발자(남동우) 판단, 학회 확인 필요, 2026-11-26)"
+    },
+    {
+      "id": "S-FORMULA-01",
+      "type": "dtype",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "formula_replaced",
+        "reference": "data/forms/2026_formulas.json",
+        "sheets": [
+          "전체",
+          "논문"
+        ]
+      },
+      "message": "자동계산(회색) 칸의 수식이 값으로 바뀌었거나 지워졌습니다. 수기로 고친 것이라면 이유를 확인하세요.",
+      "basis": "작성법 2: 입력값 항목 회색으로 된 부분은 작성 및 수정하지 마시고. 논문 시트 E1: 회색칸은 자동계산함수가 적용된 곳"
+    },
+    {
+      "id": "S-EXCEL-ERR",
+      "type": "dtype",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "excel_error_value",
+        "sheets": [
+          "전체",
+          "논문",
+          "A-3-2",
+          "A-6"
+        ]
+      },
+      "message": "엑셀 오류값(#DIV/0!, #REF! 등)이 저장되어 있습니다. 입력 칸이 비었거나 수식이 깨졌을 수 있습니다.",
+      "basis": "숫자·형식 위반(작업 지시 6.1)"
+    },
+    {
+      "id": "A-6-SUM-01",
+      "type": "sum_match",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "pairs_from_surgery_sheets": true,
+        "pairs": [
+          {
+            "summary": "전체!BQ6",
+            "sheet_total": "'A-6'!N4"
+          },
+          {
+            "summary": "전체!BR6",
+            "sheet_total": "'A-6'!N10"
+          },
+          {
+            "summary": "전체!DZ6",
+            "sheet_total": "논문!R2"
+          },
+          {
+            "summary": "전체!Q6",
+            "sheet_total": "'A-3-2'!B9"
+          },
+          {
+            "summary": "전체!DT6",
+            "sheet_total": "'A-3-2'!C9"
+          },
+          {
+            "summary": "전체!DS6",
+            "sheet_total": "'B-2-3'!F13"
+          }
+        ]
+      },
+      "message": "'전체' 시트 값과 증빙 시트 합계가 다릅니다.",
+      "basis": "가이드라인: 수술별 sheet로 이동, 수술명 확인, 합계 잘 기록되었는지 확인. DS6은 직접입력이지만 B-2-3 총 참석 횟수(F13)와 같아야 함"
+    },
+    {
+      "id": "A-6-ROWS-01",
+      "type": "rows_vs_total",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "from_surgery_sheets": true,
+        "first_row": 5,
+        "count_col": "D"
+      },
+      "message": "증빙 시트의 환자 행 수와 총 건수 칸 값이 다릅니다. 양측 수술(2건) 등 정당한 차이인지 확인하세요.",
+      "basis": "각 수술 시트 1행: '우측 칸에 총 건수 기재 (숫자만) 자동입력 안되니 철저히 확인해서 정확히 입력'. FAQ: 양측 고실·이하선 수술은 2건"
+    },
+    {
+      "id": "A-6-ESS-SIDES",
+      "type": "rows_vs_total",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "sheet": "b ESS",
+        "total": "I1",
+        "sum_col": "H",
+        "first_row": 5
+      },
+      "message": "부비동내시경수술: 소계(R+L) 열의 합과 총 건수가 다릅니다.",
+      "basis": "b ESS 시트 A3: 이 항목만 병변의 쪽수로 계산하여 양측 수술은 2건"
+    },
+    {
+      "id": "A-6-DATE-LIMIT",
+      "type": "period",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "from_surgery_sheets": true,
+        "date_col": "C",
+        "first_row": 5,
+        "check": "year_missing_limit"
+      },
+      "message": "수술 날짜가 'O월 O일' 형식이라 연도가 없어 2025년 1~12월 기간 검사를 자동으로 할 수 없습니다(연도가 적힌 행만 검사).",
+      "basis": "수술 시트 C4 머리글 '수술날짜 (O월 O일)'. 가이드라인: 실적 인정 기간 2025년 1~12월"
+    },
+    {
+      "id": "A-6-DATE-01",
+      "type": "period",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "from_surgery_sheets": true,
+        "date_col": "C",
+        "first_row": 5,
+        "period": "period_default",
+        "only_with_year": true
+      },
+      "message": "수술(검사) 날짜가 2025년 1~12월 밖입니다.",
+      "basis": "가이드라인: 실적 인정 기간 원칙 2025년 1~12월"
+    },
+    {
+      "id": "A-6-PRIV-01",
+      "type": "evidence",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "from_surgery_sheets": true,
+        "name_col": "D",
+        "first_row": 5,
+        "check": "name_masked",
+        "mask_char": "*"
+      },
+      "message": "개인정보 가림 처리 확인: 환자 이름 가운데가 '*'로 가려지지 않은 것으로 보입니다.",
+      "basis": "작성법 6: 'A-6-4 연간 수술건수 증빙입력시 환자 이름은 중간에 *로 표시되도록 우측에 변환서식에 입력 후 복사하여 값입력만 넣어주시기 바랍니다.' 수술 시트 D4 머리글 '이름 (홍*동)'"
+    },
+    {
+      "id": "A-6-MIN-01",
+      "type": "threshold",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "checks": [
+          {
+            "cell": "전체!BS6",
+            "label": "고실성형술",
+            "min": 30
+          },
+          {
+            "cell": "전체!BT6",
+            "label": "부비동내시경수술",
+            "min": 70
+          },
+          {
+            "cell": "전체!BU6",
+            "label": "두경부악성종양근치술",
+            "min": 5
+          },
+          {
+            "cell": "전체!BZ6",
+            "label": "갑상선 적출술",
+            "min": 5
+          }
+        ]
+      },
+      "message": "과락 기준 건수 미달입니다. 파견수련보고서로 충족 여부 확인이 필요합니다.",
+      "basis": "가이드라인 4.2) 과락제 필수 수술: 고실성형술 30, 부비동내시경수술 70, 두경부악성종양근치술 5, 갑상선 적출술 5"
+    },
+    {
+      "id": "A-6-DUP-01",
+      "type": "evidence",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "pairs": [
+          [
+            "b ESS",
+            "e 비중격"
+          ],
+          [
+            "e 비중격",
+            "g 외비성형술"
+          ]
+        ],
+        "patient_id_header": "등록번호|환자번호|병록번호|환자ID|진료번호",
+        "header_row": 4
+      },
+      "message": "증빙 시트에 환자 식별 칸이 없어 같은 환자 중복(한쪽만 인정)을 자동으로 확인할 수 없습니다.",
+      "basis": "가이드라인 4.2) 부비동내시경수술-비중격성형술, 비중격성형술-외비성형술은 한 환자당 한쪽만 인정. FAQ e-1, e-6, g-1"
+    },
+    {
+      "id": "A-6-PATH-01",
+      "type": "required",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "i 두경부양성",
+        "first_row": 5,
+        "row_key_col": "D",
+        "cols": [
+          "E",
+          "F"
+        ],
+        "vague_pattern": "^\\s*(neck\\s*mass|mass\\s*excision)\\s*$",
+        "pathology_col": "G",
+        "diagnosis_col": "E"
+      },
+      "message": "두경부 양성종양: 진단명·수술명이 비었거나, 진단명이 병리 소견 없이 'Neck mass'처럼 적혀 있습니다. 불인정될 수 있습니다.",
+      "basis": "i 시트 E4 '진단명 (병리 소견 없이 Neck mass 로 표기할 경우 불인정 가능)', F4 '수술명 (병리 소견 없이 Mass excision 로 적을 경우 불인정)'. 진단명이 구체적이면(예: Lipoma) 수술명이 'Mass excision'이어도 경고하지 않음(오탐 검토 2026-11-26)"
+    },
+    {
+      "id": "A-6-OSA-01",
+      "type": "required",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "k 수면무호흡",
+        "first_row": 5,
+        "row_key_col": "D",
+        "cols": [
+          "C"
+        ]
+      },
+      "message": "수면무호흡: PSG 시행일이 비어 있습니다.",
+      "basis": "가이드라인 4.2) A-6-4 k: 2025년 1~12월 PSG 시행 환자. FAQ k-4: PSG를 통해 진단된 수면무호흡 환자"
+    },
+    {
+      "id": "A-6-OSA-02",
+      "type": "required",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "k 수면무호흡",
+        "first_row": 5,
+        "row_key_col": "D",
+        "any_of": [
+          "E",
+          "F"
+        ]
+      },
+      "message": "수면무호흡: 양압기 처방일과 수술일이 모두 비어 있습니다. PSG 후 양압기 또는 UPPP 이상 수술이 있어야 인정됩니다.",
+      "basis": "FAQ k-5: 'PSG를 하고 양압기나 UPPP 이상의 수술을 한 경우'에만 인정. 처방·수술일은 2026년이어도 됨(가이드라인 4.2)"
+    },
+    {
+      "id": "A-6-EVID-01",
+      "type": "evidence",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "A-6",
+        "kinds": [
+          "embedded",
+          "hyperlink_external"
+        ]
+      },
+      "message": "A-6-2·A-6-3: 의무기록실 또는 원무팀 확인서 첨부가 보이지 않습니다. 별도 파일로 제출했다면 무시하세요.",
+      "basis": "A-6 시트 A13: '의무기록실 혹은 원무팀, 의료정보팀 등'의 확인서. 작성법 5: 첨부가 안되면 별도의 파일로 보내주셔도 됩니다"
+    },
+    {
+      "id": "A-2-2-RECALC",
+      "type": "recalc",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "supervisors": "전체!I6",
+        "selection": "전체!J7",
+        "residents_by_year": "'A-3-2'!B4:B7",
+        "yes": "N-3 충족",
+        "no": "N-3 미충족"
+      },
+      "message": "A-2-2: 선택한 값이 n ≤ N-3 계산(n = 연차별 전공의 정원 중 최댓값)과 다릅니다. 이동수련자가 있으면 다를 수 있으니 확인하세요.",
+      "basis": "양식 전체!J4: '평가 전년도 2025년 9/30일 기준 전공의 정원(n) 대비 정원책정 지도전문의(N)수가 n ≤ N-3를 충족하는가? * 이동수련자 제외한 최다 연차의 전공의 수 적용'. A~E 5개 병원의 선택이 모두 이 해석과 일치",
+      "todo": "n을 A-3-2 B열(정원)과 C열(현원) 중 어느 쪽에서 셀지 학회 확인 필요(현재 B열). 이동수련자는 양식에서 구분 불가"
+    },
+    {
+      "id": "B-5-RECALC",
+      "type": "recalc",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "checks": [
+          {
+            "cell": "전체!EB6",
+            "num": [
+              "전체!BR6"
+            ],
+            "den": "전체!Q6"
+          },
+          {
+            "cell": "전체!EC6",
+            "num": [
+              "전체!BQ6"
+            ],
+            "den": "전체!Q6"
+          },
+          {
+            "cell": "전체!ED6",
+            "num": [
+              "전체!BS6",
+              "전체!BT6",
+              "전체!BU6",
+              "전체!BZ6"
+            ],
+            "den": "전체!Q6"
+          }
+        ],
+        "denominator_must_equal": "'A-3-2'!B9"
+      },
+      "message": "B-5: 전공의 총 정원(현재 인원 아님)으로 나눈 값과 다릅니다.",
+      "basis": "논문주의사항 7): 'B-5 항목 전공의 수 대비 진료실적 : 전공의 총 정원수 (현 인원이 아닌)로 나눔'"
+    },
+    {
+      "id": "C-4-RECALC",
+      "type": "recalc",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "checks": [
+          {
+            "cell": "전체!FO6",
+            "num": [
+              "전체!DZ6"
+            ],
+            "den": "전체!H6"
+          }
+        ]
+      },
+      "message": "C-4: 2025년 9월 30일 기준 전문의 총수(전임의 1년차 포함)로 나눈 1인당 논문점수와 다릅니다.",
+      "basis": "가이드라인: '전공의 1인당, 전문의 1인당 논문점수 자동계산'. 논문주의사항 7): 'C-4 항목 전문의 논문실적 : 평가전년도 9/30일 기준 지도전문의 총수로 나눔 (전임의 1년차도 포함…)'"
+    },
+    {
+      "id": "P-PERIOD-MARFEB",
+      "type": "period",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "B-2-3",
+        "first_row": 3,
+        "last_row": 12,
+        "date_col": "C",
+        "row_key_col": "F",
+        "period": "period_mar_feb",
+        "only_with_year": true
+      },
+      "message": "B-2-3: 학술대회 일시가 2025년 3월~2026년 2월 밖입니다.",
+      "basis": "작성법 A6: 'A-3-3, A-10-3, B-2-3, E-2-b는 3월~2월까지임'"
+    },
+    {
+      "id": "P-PERIOD-LIMIT",
+      "type": "period",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "sheets": [
+          "A-3-3",
+          "A-10-3-d"
+        ],
+        "check": "structure_limit"
+      },
+      "message": "A-3-3(파견기간 '0개월')·A-10-3(월별 당직표)은 날짜 칸이 없어 2025년 3월~2026년 2월 기간 검사를 자동으로 할 수 없습니다.",
+      "basis": "작성법 A6. A-3-3 E3 '파견기간 (0개월)', A-10-3-d A2 '기준기간: 평가전년도 3/1일부터 평가년도 2월 말일까지'"
+    },
+    {
+      "id": "B-2-3-ROWS",
+      "type": "required",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "B-2-3",
+        "first_row": 3,
+        "last_row": 12,
+        "row_key_col": "F",
+        "cols": [
+          "B",
+          "C",
+          "E"
+        ],
+        "row_key_nonzero": true
+      },
+      "message": "외부 학술대회: 참석 인원은 있는데 행사명·일시·참가자 이름이 비어 있습니다.",
+      "basis": "B-2-3 머리글(행사·일시·참가 전공의들 이름). 실제 심사에서 B-2-3 중복·횟수 오류 수정 사례 있음"
+    },
+    {
+      "id": "B-2-3-KIND",
+      "type": "evidence",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "event_kind",
+        "sheet": "B-2-3",
+        "first_row": 3,
+        "last_row": 12,
+        "name_col": "B",
+        "date_col": "C",
+        "venue_col": "D",
+        "count_col": "F",
+        "linked_summary": "전체!DS6",
+        "keywords": [
+          "심포지엄",
+          "심포지움",
+          "symposium",
+          "연수회",
+          "연수강좌",
+          "길라잡이",
+          "세미나",
+          "seminar",
+          "포럼",
+          "forum",
+          "집담회",
+          "증례학술대회"
+        ]
+      },
+      "message": "외부 학술대회: 정기학술대회가 아닐 수 있는 행사(심포지엄·연수회·세미나·포럼·집담회 등)입니다. 참석 횟수에 들어가는지 확인하세요.",
+      "basis": "B-2-3 시트 작성 방법 나: '아래 학회 주관 정기학술대회만 해당됨 (심포지움, 증례학술대회, 합동연수회 및 길라잡이, 전공의 연수강좌는 해당 안됨)', 다: '전공의 연수강좌, 길라잡이 등은 인정되지 않습니다'. 국제학술대회(워크샵)는 같은 작성 방법에서 조건부 인정",
+      "todo": "작성 방법에 명시된 제외 대상은 심포지움·증례학술대회·합동연수회·길라잡이·연수강좌. 세미나·포럼·집담회는 개발자(남동우) 판단, 학회 확인 필요. 워크숍/워크샵은 국제학술대회 조건부 인정이라 B-2-3-INTL(INFO)로 분리"
+    },
+    {
+      "id": "B-2-3-INTL",
+      "type": "evidence",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "check": "event_kind",
+        "sheet": "B-2-3",
+        "first_row": 3,
+        "last_row": 12,
+        "name_col": "B",
+        "date_col": "C",
+        "venue_col": "D",
+        "count_col": "F",
+        "linked_summary": "전체!DS6",
+        "keywords": [
+          "국제",
+          "international",
+          "워크숍",
+          "워크샵",
+          "workshop",
+          "congress",
+          "world"
+        ]
+      },
+      "message": "국제학술대회 인정 조건 확인: 국내 개최 국제학회는 대한의사협회 승인 국제학회만 인정되며, 명찰이나 등록영수증을 PDF로 B-2-3 시트에 첨부해야 합니다.",
+      "basis": "B-2-3 시트 작성 방법 나: '국제학술대회 (워크샵) : 국내 개최 국제학회의 경우 대한의사협회 승인 국제학회에 한하며 증빙자료(명찰이나 등록영수증)를 PDF로 모아 본 쉬트에 첨부해야 함'"
+    },
+    {
+      "id": "B-2-3-DUP",
+      "type": "evidence",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "event_duplicate",
+        "sheet": "B-2-3",
+        "first_row": 3,
+        "last_row": 12,
+        "name_col": "B",
+        "date_col": "C",
+        "venue_col": "D",
+        "count_col": "F",
+        "linked_summary": "전체!DS6",
+        "max_days_apart": 3
+      },
+      "message": "외부 학술대회: 같은 학술대회를 날짜(일차)별로 나눠 적은 것으로 보입니다. 한 번만 세는지 확인하세요.",
+      "basis": "B-2-3 머리글 '전공의 1인당 외부 학술대회 참석횟수'. 실제 심사에서 같은 학술대회 I·II를 '중복'으로 0 처리한 사례(B병원)"
+    },
+    {
+      "id": "E-2-B",
+      "type": "required",
+      "level": "INFO",
+      "enabled": false,
+      "target": {
+        "sheet": "전체",
+        "cells": [
+          "GB6"
+        ]
+      },
+      "message": "E-2-b 이러닝 수료 규정 충족률",
+      "basis": "양식 전체!GB3 'b (2026년 수련실태조사 제외)', E-2 시트 A1 '(2026년 수련실태조사에서 제외)', 가이드라인 4.7"
+    },
+    {
+      "id": "P-REQ-01",
+      "type": "paper",
+      "level": "ERROR",
+      "enabled": true,
+      "target": {
+        "check": "claim_type"
+      },
+      "message": "논문: 저널종류(D열)가 비었거나 양식의 선택지가 아닙니다. 점수 자동계산에 쓰이는 칸입니다.",
+      "basis": "논문 시트 D3 '저널종류 (버튼)' 드롭다운. E열 점수 수식이 D열을 참조"
+    },
+    {
+      "id": "P-REQ-02",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "required_cols"
+      },
+      "message": "논문: 저널명 또는 출판일이 비어 있습니다.",
+      "basis": "가이드라인: 입력 값이 비어 있으면 안 됩니다. 논문주의사항 9): 출판연월일·권호 확인"
+    },
+    {
+      "id": "P-COUNT-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "author_counts"
+      },
+      "message": "논문: 저자 수(총 제1저자 수·해당 병원 제1저자 수·총 교신저자 수·해당 병원 교신저자 수)를 확인하세요.",
+      "basis": "논문주의사항 3): 제1저자·교신저자 수로 0.5/n, 0.5/m 배분. 해당 병원 저자 수는 총수보다 클 수 없음"
+    },
+    {
+      "id": "P-QYEAR-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "claimed_year"
+      },
+      "message": "논문: 기재한 출판일이 평가 대상 연도(reference.paper_year)가 아닙니다. 정식 출판일 기준으로 확인하세요.",
+      "basis": "논문주의사항 1): 1월~12월까지 정식출판된 논문만 해당(Epub 날짜 아님). 기준 연도는 설정값"
+    },
+    {
+      "id": "P-BIB-OFF",
+      "type": "paper",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "check": "lookup_off"
+      },
+      "message": "외부 서지 조회를 사용하지 않아 논문 서지(정식 출판·연도·형식·등재)는 확인하지 않았습니다.",
+      "basis": "화면의 '외부 서지 조회 사용' 설정"
+    },
+    {
+      "id": "P-BIB-FAIL",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "lookup_failed"
+      },
+      "message": "외부 서지 확인 불가: Crossref·PubMed 조회가 실패했습니다(네트워크 차단·시간 초과 등). 직접 확인하세요.",
+      "basis": "외부 조회 실패 시 검사를 멈추지 않고 해당 논문에만 표시(작업 지시 1.5)"
+    },
+    {
+      "id": "P-BIB-UNSURE",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "lookup_uncertain",
+        "domestic_level": "INFO"
+      },
+      "message": "자동 확인 불가: 서지 DB에서 확신할 만큼 일치하는 논문을 찾지 못했습니다. 아래 후보가 같은 논문인지 확인하세요.",
+      "basis": "제목 정규화 유사도·연도·저널 일치 기준(biblio.title_match). 기준 미달은 '불일치'가 아니라 '확인 불가'로 표시(개발자(남동우) 판단, 학회 확인 필요, 2026-11-26). 국내지(KCI 등재·유관학회지)는 국문 제목 색인이 약해 INFO로 낮춤(개발자(남동우) 판단, 학회 확인 필요)"
+    },
+    {
+      "id": "P-DOI-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "doi_format"
+      },
+      "message": "논문: DOI 형식이 맞지 않거나 Crossref에서 찾을 수 없습니다.",
+      "basis": "가이드라인 4.3) B-4-2 서지 확인"
+    },
+    {
+      "id": "P-DOI-02",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "doi_title"
+      },
+      "message": "논문: 기재한 DOI의 서지 제목이 엑셀의 제목과 다릅니다.",
+      "basis": "가이드라인 4.3) B-4-2 서지 확인"
+    },
+    {
+      "id": "P-EPUB-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "epub"
+      },
+      "message": "정식 출판 전 논문은 불인정될 수 있음: 권·호·쪽(또는 논문번호)이 확인되지 않는 선출판(Epub/Online ahead of print)입니다.",
+      "basis": "논문주의사항 1): 권, 호수 및 페이지 나온 날 기준, Online ahead of print는 제외(온라인 전용 저널은 권·호 확인 시 인정)"
+    },
+    {
+      "id": "P-YEAR-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "formal_year"
+      },
+      "message": "정식 출판일이 평가 대상 연도가 아닙니다. 실적 기간 밖일 수 있으니 확인하세요.",
+      "basis": "논문주의사항 1): 1월~12월까지 정식출판. 기준 연도 reference.paper_year(학회 확인 중)"
+    },
+    {
+      "id": "P-TYPE-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "letter"
+      },
+      "message": "불인정 형식: 서지 유형이 Letter·Editorial·Comment입니다. Letter to the editor는 인정되지 않을 수 있습니다.",
+      "basis": "논문주의사항 5): Letter to the editor는 논문형식 여부 상관없이 인정하지 않음"
+    },
+    {
+      "id": "P-TYPE-02",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "claim_original"
+      },
+      "message": "원저로 기재했으나 서지 유형이 종설·증례입니다. 한이인지 원저 가중치가 적용되지 않을 수 있습니다.",
+      "basis": "논문주의사항 6): 한이인지 Review article, Case report 등은 원저가 아닌 증례 점수로 인정"
+    },
+    {
+      "id": "P-JOUR-KCI",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "kci"
+      },
+      "message": "국내지로 기재했으나 KCI 등재(후보)지·유관학회지 목록에서 찾지 못했습니다. 인정 대상 학술지인지 확인하세요.",
+      "basis": "논문주의사항 4): 한국연구재단 등재·등재후보지, 유관학회지 이외 제외. KCI 목록 기준일은 data/journals/kci.json의 as_of"
+    },
+    {
+      "id": "P-JOUR-SCIE",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "scie"
+      },
+      "message": "SCI/SCIE로 기재했으나 불러온 SCIE 목록에서 찾지 못했습니다(또는 ESCI 단독). 등재 여부를 확인하세요.",
+      "basis": "논문주의사항 4): SCIE 등재지. 목록은 사용자가 불러온 파일 기준"
+    },
+    {
+      "id": "P-JOUR-SCIE-SKIP",
+      "type": "paper",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "check": "scie_skip"
+      },
+      "message": "SCIE 목록 미등록으로 확인 생략: SCIE 저널 목록을 불러오면 SCI/SCIE 기재 논문의 등재 여부를 확인합니다.",
+      "basis": "Clarivate 목록은 재배포하지 않음(작업 지시 7.2)"
+    },
+    {
+      "id": "P-AUTH-01",
+      "type": "paper",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "check": "co_first"
+      },
+      "message": "공동 제1저자(동등 기여) 표시가 서지에 있는데 총 제1저자 수가 1로 적혀 있습니다. 표시 누락인지 확인하세요.",
+      "basis": "논문주의사항 2): 공동 교신, 공동 1저자의 경우 엑셀에 표시. 서지의 EqualContrib 표시는 공동 교신일 수도 있음(가능한 범위의 점검)"
+    },
+    {
+      "id": "P-PRED-01",
+      "type": "paper",
+      "level": "INFO",
+      "enabled": true,
+      "target": {
+        "check": "predatory"
+      },
+      "message": "수련위원회 심의 대상이 될 수 있음: 적절한 논문 형식을 갖추지 못한 짧은 증례(예: ENT Journal Clinic 계열 1~2쪽)로 보입니다.",
+      "basis": "논문주의사항 5): 적절한 논문 형식을 갖추지 못한 부실한 논문은 수련위원회에서 심의하여 불인정 될 수 있음"
+    },
+    {
+      "id": "P-EVID-01",
+      "type": "evidence",
+      "level": "WARNING",
+      "enabled": true,
+      "target": {
+        "sheet": "논문",
+        "first_row": 4,
+        "row_key_col": "B",
+        "attachment_col": "T",
+        "kinds": [
+          "embedded"
+        ]
+      },
+      "message": "이 논문 행에 표지 PDF 첨부가 보이지 않습니다. 칼라 인쇄물로 따로 제출했다면 무시하세요.",
+      "basis": "논문주의사항 9): '논문 페이지를 PDF로 첨부하거나 칼라 인쇄물로 제출해야 함'"
+    }
+  ],
+  "papers": {
+    "sheet": "논문",
+    "header_row": 3,
+    "first_row": 4,
+    "last_row": 100,
+    "columns": {
+      "title": "B",
+      "journal": "C",
+      "claim_type": "D",
+      "first_author_total": "I",
+      "first_author_local": "J",
+      "corr_total": "N",
+      "corr_local": "O",
+      "submitted": "P",
+      "published": "Q",
+      "note": "R"
+    },
+    "doi_header": "^(doi|pmid|doi\\s*/\\s*pmid)$",
+    "claim_options": [
+      "SCI/SCIE",
+      "한이인지(원저/전공의1저자)",
+      "한이인지(원저)",
+      "한이인지(증례/종설)",
+      "연구재단등재(후보)지",
+      "유관학회지"
+    ],
+    "claims": {
+      "scie": [
+        "SCI/SCIE"
+      ],
+      "kci": [
+        "한이인지(원저/전공의1저자)",
+        "한이인지(원저)",
+        "한이인지(증례/종설)",
+        "연구재단등재(후보)지"
+      ],
+      "related": [
+        "유관학회지"
+      ],
+      "original": [
+        "한이인지(원저/전공의1저자)",
+        "한이인지(원저)"
+      ]
+    },
+    "letter_types": [
+      "letter",
+      "editorial",
+      "comment"
+    ],
+    "non_original_types": [
+      "review",
+      "case report",
+      "case-report"
+    ],
+    "predatory": {
+      "journals": [
+        "Ear, Nose & Throat Journal",
+        "Ear Nose Throat J",
+        "ENT Journal",
+        "Ear, Nose and Throat Journal"
+      ],
+      "title_keywords": [
+        "clinic",
+        "otoscopic"
+      ],
+      "max_pages": 2
+    },
+    "journal_lists": {
+      "kci": "data/journals/kci.json",
+      "related": "data/journals/kci_related.json",
+      "kci_aliases": "data/journals/kci_aliases.json"
+    }
+  },
+  "rules_version": "2026.5.1"
+}

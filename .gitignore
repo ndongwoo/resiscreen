@@ -1,0 +1,11 @@
+# 실제 병원 파일(익명화본 포함)은 절대 커밋하지 않는다
+tests/fixtures/private/
+node_modules/
+dist/
+coverage/
+.cache/
+*.log
+dist-node/
+out/
+# 원문이 들어간 상세 문서(공개 금지)
+docs/private/

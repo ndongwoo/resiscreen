@@ -1,0 +1,138 @@
+{
+ "source": "논문주의사항 4) 유관학회지 11종(2026 양식) + KCI 목록(data/journals/kci.json, 기준일 2025-08-25)에서 찾은 ISSN. 영문 별칭은 ResiReview 잠정값 포함",
+ "as_of": "2026-11-26",
+ "confirmed": false,
+ "note": "KCI 등재 여부와 관계없이 인정 목록으로 쓴다(개발자(남동우) 판단, 학회 확인 필요, 2026-11-26). ISSN·별칭은 학회 확인 전 잠정값",
+ "journals": [
+  {
+   "name_ko": "대한갑상선학회지",
+   "issn": "2384-3799",
+   "eissn": "2466-1899",
+   "aliases": [
+    "International Journal of Thyroidology",
+    "Int J Thyroidol"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI 'International Journal of Thyroidology'와 ISSN 대조"
+  },
+  {
+   "name_ko": "대한기관식도과학회지",
+   "issn": "",
+   "eissn": "",
+   "aliases": [
+    "Journal of Korean Bronchoesophagological Society",
+    "Korean Journal of Bronchoesophagology",
+    "J Korean Bronchoesophagol Soc"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI 목록에 없음. 이름으로만 대조"
+  },
+  {
+   "name_ko": "대한두경부종양학회지",
+   "issn": "",
+   "eissn": "2586-2553",
+   "aliases": [
+    "Korean Journal of Head and Neck Oncology",
+    "Korean J Head Neck Oncol",
+    "대한두경부종양학회"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI '대한두경부종양학회'(등재후보) eISSN"
+  },
+  {
+   "name_ko": "대한두개저외과학회지",
+   "issn": "1975-4639",
+   "eissn": "",
+   "aliases": [
+    "Journal of Korean Skull Base Society",
+    "J Korean Skull Base Soc",
+    "대한두개저학회지"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI '대한두개저학회지'와 같은 학술지로 추정(이름 차이) — 학회 확인 필요"
+  },
+  {
+   "name_ko": "대한비과학회지",
+   "issn": "1229-1498",
+   "eissn": "2384-4361",
+   "aliases": [
+    "Journal of Rhinology",
+    "J Rhinol"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI 'Journal of Rhinology'"
+  },
+  {
+   "name_ko": "대한수면학회지",
+   "issn": "2093-9175",
+   "eissn": "2233-8853",
+   "aliases": [
+    "Sleep Medicine Research",
+    "Sleep Med Res"
+   ],
+   "status": "유관학회지",
+   "basis": "대한수면학회(Korean Society of Sleep Medicine) 학술지 'Sleep Medicine Research'(pISSN 2093-9175, eISSN 2233-8853). KCI 목록의 'sleep medicine research'와 ISSN으로 연결. 'Journal of Sleep Medicine'(2384-2423)은 대한수면연구학회 저널이라 제외(개발자 확인 2026-11-26)"
+  },
+  {
+   "name_ko": "대한연하장애학회지",
+   "issn": "2233-5978",
+   "eissn": "2713-6191",
+   "aliases": [
+    "Journal of the Korean Dysphagia Society",
+    "J Korean Dysphagia Soc"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI '대한연하장애학회지'"
+  },
+  {
+   "name_ko": "대한청각학회지",
+   "issn": "2384-1621",
+   "eissn": "2384-1710",
+   "aliases": [
+    "Journal of Audiology & Otology",
+    "Journal of Audiology and Otology",
+    "J Audiol Otol",
+    "Korean Journal of Audiology",
+    "Korean J Audiol"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI 'Journal of Audiology & Otology'"
+  },
+  {
+   "name_ko": "대한평형의학회지",
+   "issn": "2092-8882",
+   "eissn": "2093-5501",
+   "aliases": [
+    "Research in Vestibular Science",
+    "Res Vestib Sci"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI 'Research in Vestibular Science'"
+  },
+  {
+   "name_ko": "대한후두음성언어의학회지",
+   "issn": "2508-268X",
+   "eissn": "2508-5603",
+   "aliases": [
+    "Journal of the Korean Society of Laryngology, Phoniatrics and Logopedics",
+    "Journal of Korean Society of Laryngology, Phoniatrics and Logopedics",
+    "J Korean Soc Laryngol Phoniatr Logop"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI '대한후두음성언어의학회지'"
+  },
+  {
+   "name_ko": "임상이비인후과학회지",
+   "issn": "1225-0244",
+   "eissn": "2713-833X",
+   "aliases": [
+    "Journal of Clinical Otolaryngology Head and Neck Surgery",
+    "Journal of Clinical Otolaryngology",
+    "J Clin Otolaryngol Head Neck Surg",
+    "임상이비인후과"
+   ],
+   "status": "유관학회지",
+   "basis": "KCI '임상이비인후과'"
+  }
+ ]
+}

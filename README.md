@@ -1,0 +1,163 @@
+# ResiScreen — 수련실태조사서 사전 점검 도구
+
+대한이비인후과학회 전공의 수련실태조사서(엑셀)를 각 수련병원 담당자가 학회에 내기 전에 자기 PC의 브라우저에서 점검하는 정적 웹앱입니다. 학회 내부 일괄 처리용 Node CLI도 함께 있습니다.
+
+- 엑셀 파일은 브라우저 밖으로 나가지 않습니다. 서버가 없습니다.
+- 이 도구는 판정하지 않습니다. 빈칸, 형식 위반, 기간 의심, 서지 불일치 같은 '확인할 점'만 알려 줍니다. 최종 판정은 사무국과 수련위원이 합니다.
+- 판단 규칙은 코드가 아니라 `rules/<연도>.json`에 있습니다.
+
+> GitHub 웹 화면에서 규칙을 고치고 자동 배포를 확인하는 자세한 절차와 비개발자용 규칙 설명(RULES.md)은 마일스톤 6에서 채웁니다.
+
+## 외부로 나가는 정보
+
+- 논문 확인을 위해 DOI 또는 논문 제목만 Crossref·PubMed(NCBI)에 조회합니다(마일스톤 4).
+- **연락처 이메일**
+  - **웹 화면:** '외부 서지 조회 사용'이 켜져 있으면 연락처 이메일을 꼭 입력해야 '점검 시작'이 눌립니다. 형식을 검사하고, example·test 같은 예시용 도메인은 받지 않습니다. 입력한 이메일은 Crossref 요청의 `mailto`로만 쓰고, 결과 화면·결과 엑셀·인쇄용 HTML·서지 캐시에는 넣지 않습니다. 저장하지 않는 것이 기본이며, '이 브라우저에 기억'을 켠 경우에만 IndexedDB에 저장합니다(삭제 버튼 있음). 서지 조회를 끄면 이메일 없이 점검할 수 있습니다.
+  - **PubMed(E-utilities):** `tool=resiscreen`과 학회 연락처(`rules/<연도>.json`의 `biblio.pubmed_email`)를 고정으로 보냅니다.
+  - **CLI:** `--mailto`를 주지 않으면 `biblio.mailto`(학회 연락처)를 씁니다.
+  - `biblio.mailto`·`biblio.pubmed_email`은 공개 저장소와 웹 번들에 그대로 들어가므로 학회 공용 주소만 넣으세요.
+- NCBI API 키는 브라우저에 노출되므로 쓰지 않습니다.
+
+## 필요한 환경
+
+- **Node.js 20 이상**(개발·확인은 Node 22.22), npm 9 이상. 웹 화면은 최신 Chrome·Edge에서 동작합니다(마일스톤 5).
+- 일부 Node 배포판은 TypeScript를 직접 실행하지 못합니다. 그래서 CLI와 도구는 `tsc`로 `dist-node/`에 컴파일한 뒤 실행합니다. 아래 `npm run` 명령들이 컴파일을 자동으로 합니다. `dist-node/`는 커밋하지 않습니다.
+
+## 웹 화면(병원 담당자용)
+
+- 빌드: `npm run build:web` → `dist/` (정적 파일만. GitHub Pages에 그대로 올린다)
+- 로컬 미리보기: `npm run preview` → http://127.0.0.1:4173/
+- 파일은 브라우저의 Web Worker 안에서만 처리합니다. 서지 조회 캐시와 SCIE 목록만 IndexedDB(`resiscreen`)에 저장하며, 화면의 버튼으로 지울 수 있습니다.
+- 외부 요청은 Crossref·PubMed 두 곳뿐입니다. 페이지 CSP(`index.html`)와 엔진의 허용 호스트 목록(`src/engine/biblio/client.ts`의 `ALLOWED_HOSTS`)이 함께 막습니다. 두 목록은 테스트로 일치를 확인합니다.
+
+## CLI로 점검하기(학회 내부 일괄 처리)
+
+```bash
+npm ci
+```
+
+```bash
+npm run check -- 병원1.xlsx 병원2.xlsx --out 결과폴더
+```
+
+파일마다 `<이름>.점검결과.xlsx`(요약·결과 목록)와 `<이름>.result.json`이 만들어집니다.
+
+- `--no-biblio`: 외부 서지 조회를 하지 않습니다(오프라인). 논문 서지 검사는 건너뛰고 나머지 검사는 모두 합니다.
+- `--scie <파일>`: 학회에서 받은 SCIE 목록(엑셀 또는 CSV)으로 SCI/SCIE 기재 논문의 등재 여부를 확인합니다. 이 파일은 저장소에 넣지 마세요(Clarivate 라이선스).
+- `--cache <파일>`: 서지 조회 캐시 위치(기본 `~/.cache/resiscreen/biblio.json`, 30일). 공개 서지 정보만 저장합니다.
+- `--mailto <이메일>`: Crossref에 보낼 연락처. 없으면 `biblio.mailto`를 씁니다.
+- 외부 조회는 초당 2건 이하로 보냅니다. 논문 20편이면 첫 실행에 30초 남짓 걸리고, 다시 실행하면 캐시로 바로 끝납니다. 한 파일이라도 ERROR가 있으면 종료 코드는 1입니다. 컴파일된 뒤에는 `node dist-node/src/cli/index.js check <파일들> --out <폴더>`로 바로 실행해도 됩니다.
+
+## 개발자용 명령
+
+```bash
+npm test
+```
+
+```bash
+npm run validate:rules
+```
+
+```bash
+npm run check -- tests/fixtures/synthetic/합성_2026_오류포함.xlsx --out out
+```
+
+- `npm run typecheck`: 타입 검사
+- `npm run check:fixtures`: 공개하면 안 되는 엑셀 파일이 추적되는지 검사
+- `npm run eval:recall`: 평가 전·후 파일로 재현율 계산(비공개 파일이 있을 때만)
+- `npm run bench:read -- <direct|exceljs> <파일>`: 엑셀 읽기 성능 비교
+
+## 배포 절차
+
+GitHub에 올리기(push) 전에 **반드시** 아래 순서를 지킵니다. 공개 저장소는 커밋 이력까지 모두 공개됩니다.
+
+1. 테스트와 규칙 검사:
+
+   ```bash
+   npm test && npm run validate:rules
+   ```
+
+2. **공개 전 검사(필수)**: 작업 트리와 커밋 이력 전체에서 병원 파일의 원문(이름·논문 제목·병원명·셀 값), 허용 목록 밖의 이메일, 주민등록번호·휴대전화 모양, 공개 위치 밖의 엑셀 파일을 찾습니다. 결과가 **0건**이어야 push합니다.
+
+   ```bash
+   npm run scan:private
+   ```
+
+   - 이 PC에 비공개 fixture(`tests/fixtures/private/*.xlsx`)가 있으면 그 파일의 문자열로 검사합니다. 없으면 기본 패턴만 검사합니다(CI도 기본 패턴만).
+   - 찾은 문자열은 앞 두 글자만 보이게 가려서 출력합니다.
+   - 일반 용어라 빼야 하는 항목은 `tools/prepublish_allowlist.json`에 이유와 함께 적습니다. 사람·병원을 식별할 수 있는 말은 넣지 않습니다.
+   - 0건이 아니면 해당 파일을 고칩니다. 이미 커밋된 경우에는 이력 정리가 필요하니 담당자와 상의합니다.
+3. push하면 GitHub Actions가 동작합니다.
+   - `ci`: 타입 검사, 테스트, 규칙 검사, 공개 전 검사(기본 패턴), 빌드
+   - `pages`: main 브랜치만 해당. 깨끗한 checkout에서 빌드하고 GitHub Pages에 배포합니다. 앱 버전은 빌드한 커밋이며, `-dirty`가 붙으면 배포를 멈춥니다.
+4. 배포가 끝나면 아래 '배포 후 확인'을 진행합니다.
+
+## 버전 표시
+
+결과 화면 요약, '점검결과' 엑셀 요약 시트, 인쇄용 HTML 세 곳에 다음을 적습니다.
+- 앱 버전: 빌드한 git 커밋 8자리. 커밋하지 않은 변경이 있으면 `-dirty`가 붙습니다.
+- 규칙 파일 버전: `rules_version`과 내용 지문 8자리
+- KCI 목록 기준일
+
+규칙을 고치면 `rules/<연도>.json`의 `rules_version`도 올려 주세요. 올리지 않아도 지문은 바뀝니다. 빌드 결과의 스크립트·CSS 파일 이름에는 내용 해시가 붙으므로(`assets/index-<해시>.js`, `assets/worker-<해시>.js`), 새로 배포하면 브라우저가 이전 파일을 쓰지 않습니다. `index.html`만 이름이 고정입니다.
+
+## 배포 후 확인(수동 체크리스트)
+
+GitHub Pages 주소에서 사람이 직접 확인합니다. 결과는 날짜와 함께 이슈나 문서에 남겨 주세요.
+
+1. **Edge(최신판)와 Chrome**에서 각각 페이지가 열리는지, 안내 문구가 보이는지 확인합니다.
+2. **큰 파일 처리 시간**: A·B·C·D병원 익명화 파일(8~50MB)을 하나씩 점검합니다.
+   - 서지 조회를 끄고 잰 시간: 기준 10초 이내
+   - 조회를 켜고 첫 실행: 기준 90초 이내
+   - 같은 파일을 다시 점검(캐시 적중): 기준 15초 이내
+   - 처리 중에 화면이 멈추지 않는지(스크롤·체크박스가 반응하는지)
+3. **오프라인**: DevTools(F12) → Network 탭 → 'Offline'으로 바꾸고 점검합니다. 검사가 끝까지 돌고 논문에만 '외부 서지 확인 불가' WARNING이 붙는지 확인합니다. 재시도 때문에 논문당 십여 초가 걸릴 수 있습니다.
+4. **조회 취소**: 서지 조회 캐시를 지운 뒤 논문이 많은 파일을 점검하다가 '논문 조회 취소'를 누릅니다. 곧 멈추고 남은 논문이 '확인 불가(취소)'로 표시되는지 확인합니다.
+5. **인쇄**: 결과 화면에서 '인쇄(PDF로 저장)'를 눌러 인쇄 미리보기에 결과 표만 나오는지, 'PDF로 저장'이 되는지 확인합니다. '인쇄용 HTML 내려받기' 파일을 열어 같은 내용이 보이는지도 확인합니다.
+6. **150MB 확인 창**: 150MB가 넘는 .xlsx(테스트용으로 큰 첨부를 넣은 사본)를 고르고 '점검 시작'을 누르면 확인 창이 뜨는지, '취소'를 누르면 시작하지 않는지 확인합니다.
+7. **연락처 이메일**: 빈칸·`me@example.com`이면 '점검 시작'이 눌리지 않는지, 서지 조회를 끄면 눌리는지 확인합니다. '이 브라우저에 기억'을 켜고 새로고침하면 남아 있는지, 삭제 버튼으로 지워지는지 확인합니다.
+8. **SCIE 목록**: 학회 목록 파일을 불러와 저장 표시가 보이는지, 새로고침 후에도 남는지, 삭제되는지 확인합니다.
+9. **버전 표시**: 결과 요약의 앱 버전이 배포한 커밋과 같은지 확인합니다.
+10. **저장소**: DevTools → Application → IndexedDB → `resiscreen`에 `biblio`·`journals`·`settings` 외의 저장소가 없는지, Local Storage가 비어 있는지 확인합니다.
+
+## 저널 목록 갱신(연 1회)
+
+- **KCI 등재(후보)지**: `data/journals/kci.json`
+  1. 공공데이터포털 '한국연구재단_KCI학술지정보'(https://www.data.go.kr/data/3049043/fileData.do)에서 CSV를 내려받습니다.
+  2. 아래 명령을 실행합니다(날짜는 파일의 기준일).
+
+     ```bash
+     npm run build:node && node dist-node/tools/import_kci.js 내려받은파일.csv 2026-08-25
+     ```
+- **유관학회지 11종**: `data/journals/kci_related.json` (GitHub 웹 화면에서 직접 고칠 수 있습니다)
+- **흔히 쓰는 저널 별칭**: `data/journals/kci_aliases.json` (ISSN → 별칭 목록)
+
+## 저장소 이전(학회 조직 계정으로)
+
+처음에는 개인 계정(`ndongwoo/resiscreen`)에 두고, 학회 조직 계정이 생기면 옮깁니다.
+
+1. **이전(Transfer)**: 저장소 → Settings → General 맨 아래 'Danger Zone' → **Transfer** → 새 소유자(학회 조직)와 저장소 이름을 입력합니다. 옮기는 사람은 조직에서 저장소를 만들 수 있는 권한이 있어야 합니다.
+   - 이슈·커밋 이력·Actions 워크플로는 함께 옮겨지고, 예전 `github.com/ndongwoo/resiscreen` 주소는 새 주소로 자동 연결됩니다(git clone·push 포함).
+2. **Pages 주소는 자동으로 연결되지 않습니다.**
+   - 이전 뒤 배포 주소는 `https://<조직>.github.io/resiscreen/`로 바뀝니다. 예전 `https://ndongwoo.github.io/resiscreen/`는 404가 됩니다.
+   - 새 저장소에서 Settings → Pages → Source가 'GitHub Actions'인지 확인하고, Actions에서 `pages` 워크플로를 한 번 실행(Run workflow)해 다시 배포합니다.
+3. **예전 주소에서 새 주소로 보내기(선택)**: 병원 담당자가 예전 주소를 북마크했을 수 있으므로, 개인 계정의 사용자 사이트 저장소 `ndongwoo/ndongwoo.github.io`에 아래 파일을 `resiscreen/index.html`로 둡니다. 이 저장소의 Pages가 켜져 있어야 합니다(Settings → Pages → Source: 'Deploy from a branch', main / root).
+
+   ```html
+   <!doctype html>
+   <html lang="ko"><head><meta charset="utf-8">
+   <title>주소가 바뀌었습니다</title>
+   <meta http-equiv="refresh" content="0; url=https://<조직>.github.io/resiscreen/">
+   <link rel="canonical" href="https://<조직>.github.io/resiscreen/">
+   </head><body>
+   <p>수련실태조사서 사전 점검 도구 주소가 바뀌었습니다: <a href="https://<조직>.github.io/resiscreen/">https://&lt;조직&gt;.github.io/resiscreen/</a></p>
+   </body></html>
+   ```
+
+   - 브라우저 저장소(IndexedDB)는 주소(출처)별로 따로이므로, 새 주소에서는 SCIE 목록·서지 캐시·기억한 연락처가 비어 있습니다. 병원 담당자에게 SCIE 목록을 다시 불러오라고 안내합니다.
+4. README·안내 문서의 주소를 새 주소로 고칩니다. 학회 공용 연락처(`biblio.mailto`, `biblio.pubmed_email`)는 그대로 둡니다.
+
+## 테스트 파일
+
+- `tests/fixtures/synthetic/`: 개인정보가 없는 합성 샘플(공개). `npm run make:synthetic`으로 다시 만듭니다.
+- `tests/fixtures/private/`: 익명화 병원 파일. **절대 커밋하지 않습니다**(`.gitignore`). 이 파일이 없으면 관련 테스트는 건너뜁니다.
