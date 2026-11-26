@@ -8,6 +8,8 @@ export type ToWorker =
   /** 논문 몇 편만 캐시를 무시하고 다시 조회(마지막 점검 결과에 반영) */
   | { type: 'recheck'; rows: number[] }
   | { type: 'clearCache' }
+  /** 다시 조회용 점검 상태(엑셀 내용 포함)를 버린다 */
+  | { type: 'clearResult' }
   | { type: 'parseScie'; bytes: ArrayBuffer; fileName: string };
 
 export type Stage = 'read' | 'structure' | 'papers' | 'done';
@@ -17,5 +19,6 @@ export type FromWorker =
   | { type: 'result'; report: Report; xlsx: ArrayBuffer; recheck?: boolean }
   | { type: 'error'; message: string }
   | { type: 'cacheCleared' }
+  | { type: 'resultCleared' }
   | { type: 'scie'; list: JournalList }
   | { type: 'scieError'; message: string };

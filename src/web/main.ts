@@ -236,6 +236,22 @@ $('dl-xlsx').addEventListener('click', () => lastXlsx && download(`${stem()}.점
 $('dl-html').addEventListener('click', () => lastReport && download(`${stem()}.점검결과.html`, printableHtml(lastReport), 'text/html;charset=utf-8'));
 $('print').addEventListener('click', () => window.print());
 
+// 결과 지우기: Worker의 점검 상태(엑셀 내용 포함)와 화면 결과, 고른 파일을 모두 비운다
+$('clear-result').addEventListener('click', () => {
+  if (running) return;
+  send({ type: 'clearResult' });
+  lastReport = null;
+  lastXlsx = null;
+  busyRow = null;
+  picked = null;
+  fileInput.value = '';
+  fileName.textContent = '매크로 파일(.xlsm)과 예전 형식(.xls)은 받지 않습니다';
+  for (const id of ['summary', 'papers', 'findings']) $(id).replaceChildren();
+  resultCard.classList.add('hidden');
+  progressCard.classList.add('hidden');
+  updateStart();
+});
+
 function onWorker(m: FromWorker) {
   switch (m.type) {
     case 'progress':
@@ -264,6 +280,9 @@ function onWorker(m: FromWorker) {
         break;
       }
       showError(`처리 중 오류가 났습니다: ${m.message}`);
+      break;
+    case 'resultCleared':
+      cacheStatus.textContent = '점검 결과를 지웠습니다.';
       break;
     case 'cacheCleared':
       cacheStatus.textContent = '서지 조회 캐시를 지웠습니다.';

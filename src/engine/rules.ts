@@ -51,7 +51,7 @@ import type { EffectiveRuleSet, ResolvedReference } from './reference.ts';
 export interface RuleSet {
   status?: string;
   rules_version?: string;
-  form: { year: number; label: string; signature: SignatureItem[]; required_sheets: string[] };
+  form: { year: number; label: string; signature: SignatureItem[]; required_sheets: string[]; signature_note?: string };
   /** 비워 두면 form.year에서 계산한다(resolveReference). 값을 적으면 그 값이 우선 */
   reference?: Partial<ResolvedReference> & Record<string, unknown>;
   biblio?: Record<string, unknown>;

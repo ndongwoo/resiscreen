@@ -28,6 +28,7 @@ export function syntheticForm(rules: RuleSet, formulas: FormFormulas, opts: Synt
   sh('표지')['B4'] = '2026년도 수련실태조사 (2025년 1/1일~12/31일 실적)';
   for (const sig of rules.form.signature) {
     if (sig.equals) sh(sig.sheet)[sig.cell] = sig.equals;
+    else if (sig.contains && !sh(sig.sheet)[sig.cell]) sh(sig.sheet)[sig.cell] = `(합성) ${sig.contains}`;
   }
   for (const name of rules.form.required_sheets) sh(name);
   sh('A-3-3')['A1'] = 'A-3-3';

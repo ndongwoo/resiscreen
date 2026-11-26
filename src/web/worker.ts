@@ -63,6 +63,12 @@ scope.onmessage = async (ev: MessageEvent<ToWorker>) => {
     }
     return;
   }
+  if (msg.type === 'clearResult') {
+    // 엑셀 내용(통합문서)·결과·서지 클라이언트를 모두 놓아 메모리에서 지워지게 한다
+    last = null;
+    post({ type: 'resultCleared' });
+    return;
+  }
   if (msg.type === 'recheck') {
     if (!last) {
       post({ type: 'error', message: '다시 조회할 점검 결과가 없습니다. 파일을 다시 점검해 주세요.' });
@@ -83,7 +89,7 @@ scope.onmessage = async (ev: MessageEvent<ToWorker>) => {
   }
   if (msg.type === 'check') {
     controller = new AbortController();
-    last = null;
+    last = null; // 이전 파일의 점검 상태(엑셀 내용 포함)는 새 파일을 점검할 때 버린다
     try {
       const settings = LATEST.biblio as unknown as BiblioSettings;
       const biblio = msg.useBiblio

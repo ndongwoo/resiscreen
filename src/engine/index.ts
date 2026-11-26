@@ -93,8 +93,24 @@ export async function checkWorkbookSession(input: CheckInput): Promise<{ report:
   }
   const t1 = now();
   input.onProgress?.('structure');
-  // 양식 연도 식별: signature가 맞는 규칙을 쓴다. 맞는 것이 없으면 가장 최근 규칙으로 '지원하지 않는 양식' ERROR
-  const chosen = candidates.find((r) => checkSignature(wb, r).length === 0) ?? candidates[0]!;
+  // 양식 연도 식별: signature가 맞는 규칙을 쓴다. 맞는 것이 없으면 가장 최근 규칙으로 '지원하지 않는 양식' ERROR.
+  // 두 연도 이상이 동시에 맞으면 어느 쪽도 고르지 않고 멈춘다(서명에 연도 구분 칸이 빠진 규칙 파일 방지)
+  const matching = candidates.filter((r) => checkSignature(wb, r).length === 0);
+  if (matching.length > 1) {
+    const years = matching.map((r) => r.form.year).sort();
+    const findings: Finding[] = [
+      {
+        level: 'ERROR',
+        ruleId: 'S-FORM-02',
+        sheet: '(파일)',
+        message: `양식 연도를 판별할 수 없습니다. 이 파일이 ${years.join('·')}년 양식 서명에 모두 맞습니다. 학회 담당자에게 알려 주세요.`,
+        basis: '규칙 파일의 form.signature에 연도를 구분하는 칸이 있어야 함(README 새 연도 양식 추가 절차)',
+        detail: { years },
+      },
+    ];
+    return { report: { ...base, formYear: null, supported: false, findings, summary: summarize(findings) }, session: null };
+  }
+  const chosen = matching[0] ?? candidates[0]!;
   const rules = withResolvedReference(chosen);
   base.tool = toolInfo(input, chosen);
   const ctx: Context = { wb, rules, formulas: formulasFor(input, chosen.form.year), referenced: buildReferenceIndex(wb) };

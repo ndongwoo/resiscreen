@@ -41,6 +41,20 @@ describe('양식 연도로 규칙 선택', () => {
     expect(r.form).toMatchObject({ year: 2026, paper_year: 2025, period_mar_feb: { end: '2026-02-28' }, staff_count_date: '2025-09-30' });
     expect(r.findings.filter((f) => f.level !== 'INFO')).toEqual([]);
   });
+  it('2026 서명에는 연도를 구분하는 칸이 둘 있다(표지 B4, 전체 H4)', () => {
+    const yearCells = rules.form.signature.filter((s) => /20\d\d/.test(s.contains ?? s.equals ?? ''));
+    expect(yearCells.map((s) => `${s.sheet}!${s.cell}`)).toEqual(['표지!B4', '전체!H4']);
+  });
+  it('서명이 같은 두 연도 규칙이 동시에 맞으면 고르지 않고 ERROR로 멈춘다', async () => {
+    const fake2027: RuleSet = { ...structuredClone(rules), form: { ...structuredClone(rules.form), year: 2027, label: '가짜 2027' } }; // 서명은 2026과 똑같음
+    const bytes = await buildXlsx(syntheticForm(rules, formulas));
+    const r = await checkWorkbook({ bytes, fileName: 'x.xlsx', rules: [rules, fake2027], formulas: { 2026: formulas } });
+    expect(r.supported).toBe(false);
+    expect(r.formYear).toBeNull();
+    expect(r.findings).toHaveLength(1);
+    expect(r.findings[0]).toMatchObject({ level: 'ERROR', ruleId: 'S-FORM-02', detail: { years: [2026, 2027] } });
+    expect(r.findings[0]!.message).toContain('양식 연도를 판별할 수 없습니다');
+  });
   it('맞는 규칙이 없으면 지원하지 않는 양식 ERROR', async () => {
     const bytes = await buildXlsx(syntheticForm(rules, formulas, { patch: { 표지: { B4: '2031년도 수련실태조사' } } }));
     const r = await checkWorkbook({ bytes, fileName: 'x.xlsx', rules: [other, rules], formulas: { 2026: formulas } });

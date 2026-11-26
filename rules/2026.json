@@ -12,6 +12,11 @@
       },
       {
         "sheet": "전체",
+        "cell": "H4",
+        "contains": "2025년 9/30일 기준"
+      },
+      {
+        "sheet": "전체",
         "cell": "B3",
         "equals": "A-1-1"
       },
@@ -45,7 +50,8 @@
       "l LMS",
       "B-2-3",
       "논문"
-    ]
+    ],
+    "signature_note": "연도를 구분하는 칸: 표지 B4(조사 연도), 전체 H4(전문의 수 기준일 문구). 나머지는 양식 구조 확인용. 새 연도 규칙을 만들 때 이 두 칸의 연도를 반드시 바꾼다"
   },
   "reference": {
     "paper_year_note": "가이드라인 원문에 '발간일자(2024년)' 표기가 있어 확인 중. 확정 전까지 설정값으로 둔다.",
@@ -1161,5 +1167,5 @@
       "kci_aliases": "data/journals/kci_aliases.json"
     }
   },
-  "rules_version": "2026.6.0"
+  "rules_version": "2026.6.1"
 }

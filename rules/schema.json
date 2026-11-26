@@ -64,6 +64,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "signature_note": {
+          "type": "string"
         }
       }
     },
