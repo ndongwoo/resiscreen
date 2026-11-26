@@ -1,7 +1,7 @@
 /** 엔진 진입점. 브라우저(Web Worker)·Node CLI·테스트가 같은 함수를 쓴다. DOM 의존 없음. */
 import { loadWorkbook, WorkbookError, type LoadOptions } from './xlsx/workbook.ts';
 import { buildReferenceIndex, checkSignature, rulesFingerprint, runRules, withResolvedReference, type Context, type FormFormulas, type RuleSet } from './rules.ts';
-import { buildItemIndex, resolveDeep, type ItemColumn } from './columns.ts';
+import { buildItemIndex, newResolveLog, resolveDeep, type ItemColumn } from './columns.ts';
 import { sortFindings, summarize, type Finding, type Report } from './report.ts';
 import { runPaperStage } from './checks/papers.ts';
 import type { BiblioClient } from './biblio/client.ts';
@@ -120,7 +120,8 @@ export async function checkWorkbookSession(input: CheckInput): Promise<{ report:
   const chosenRaw = matching[0] ?? candidates[0]!;
   // 규칙 전체의 항목 키를 이 파일의 열로 바꾼다. 못 찾은 항목은 ERROR로 알리고 그 항목을 쓰는 규칙만 건너뛴다
   const missing = new Set<string>();
-  const resolved = resolveDeep(itemIndex, chosenRaw, missing);
+  const colLog = newResolveLog();
+  const resolved = resolveDeep(itemIndex, chosenRaw, missing, colLog);
   const unresolved = (v: unknown) => [...missing].some((k) => JSON.stringify(v).includes(`{${k}}`));
   const chosen: RuleSet =
     matching.length && missing.size
@@ -135,21 +136,11 @@ export async function checkWorkbookSession(input: CheckInput): Promise<{ report:
   const rules = withResolvedReference(chosen);
   base.tool = toolInfo(input, chosenRaw);
   const rawFormulas = formulasFor(input, chosenRaw.form.year);
-  const formulas = rawFormulas ? resolveDeep(itemIndex, rawFormulas, missing) : undefined;
+  const formulas = rawFormulas ? resolveDeep(itemIndex, rawFormulas, missing, colLog) : undefined;
   if (formulas?.sheets['전체']?.cells) formulas.sheets['전체'].cells = formulas.sheets['전체'].cells.filter((c) => /^[A-Z]{1,3}\d+$/.test(c));
   const ctx: Context = { wb, rules, formulas, referenced: buildReferenceIndex(wb) };
   const res = runRules(ctx);
-  if (res.supported && missing.size) {
-    for (const key of [...missing].sort())
-      res.findings.push({
-        level: 'ERROR',
-        ruleId: 'S-COL-01',
-        sheet: '전체',
-        message: `양식에서 항목 ${key}를 찾을 수 없습니다. 열을 지우거나 머리글(3~5행)을 고치지 않았는지 확인하세요. 이 항목을 쓰는 점검은 건너뛰었습니다.`,
-        basis: '규칙은 열 문자 대신 항목 코드(3행)와 머리글(4·5행)로 열을 찾는다(src/engine/columns.ts)',
-        detail: { key },
-      });
-  }
+  if (res.supported) res.findings.push(...columnFindings(missing, colLog));
   const t2 = now();
   let all = res.findings;
   let biblio = base.biblio;
@@ -241,3 +232,45 @@ export async function recheckPapers(
 
 export type { Report, Finding } from './report.ts';
 export type { RuleSet, FormFormulas } from './rules.ts';
+
+/** 열 찾기 결과: 못 찾음(S-COL-01), 하나로 못 정함(S-COL-02), 비슷한 머리글로 찾음(S-COL-03 INFO) */
+function columnFindings(missing: Set<string>, log: ReturnType<typeof newResolveLog>): Finding[] {
+  const out: Finding[] = [];
+  const basis = '규칙은 열 문자 대신 항목 코드(3행)와 머리글(4·5행)로 열을 찾는다. 공백·기호를 지운 정확 일치 → 유사도 0.8 이상이면서 2등보다 0.1 이상 높은 유사 일치 순(src/engine/columns.ts)';
+  for (const key of [...missing].sort()) {
+    const amb = log.ambiguous.get(key);
+    if (amb) {
+      const list = amb.map((c) => `${c.col} '${c.label}' ${c.score.toFixed(2)}`).join(', ');
+      out.push({
+        level: 'ERROR',
+        ruleId: 'S-COL-02',
+        sheet: '전체',
+        message: `양식에서 항목 ${key}의 열을 하나로 정할 수 없습니다(후보: ${list}). 머리글(3~5행)을 고치지 않았는지 확인하세요. 이 항목을 쓰는 점검은 건너뛰었습니다.`,
+        basis,
+        detail: { key, candidates: amb },
+      });
+    } else
+      out.push({
+        level: 'ERROR',
+        ruleId: 'S-COL-01',
+        sheet: '전체',
+        message: `양식에서 항목 ${key}를 찾을 수 없습니다. 열을 지우거나 머리글(3~5행)을 고치지 않았는지 확인하세요. 이 항목을 쓰는 점검은 건너뛰었습니다.`,
+        basis,
+        detail: { key },
+      });
+  }
+  for (const [key, f] of [...log.fuzzy.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    const code = key.split('|')[0]!.trim();
+    out.push({
+      level: 'INFO',
+      ruleId: 'S-COL-03',
+      sheet: '전체',
+      cell: `${f.col}3`,
+      itemCode: code,
+      message: `항목 ${code}를 비슷한 머리글로 찾았습니다(규칙 문구 '${f.ruleLabel}' / 양식 문구 '${f.formLabel}', 유사도 ${f.score.toFixed(2)}). 양식 머리글이 바뀌지 않았는지 확인하세요.`,
+      basis,
+      detail: { key, col: f.col, rule_label: f.ruleLabel, form_label: f.formLabel, score: f.score },
+    });
+  }
+  return out;
+}

@@ -26,15 +26,10 @@ for (const c of base) {
   const same = base.filter((x) => x.code === c.code);
   let key = c.code;
   if (same.length > 1 || same[0]!.col !== c.col) {
-    // 사람이 읽을 수 있게 머리글 원문을 쓴다(40자 안에서 낱말 단위로 자름). 연도가 바뀌어도 유사도로 찾는다
+    // 머리글 원문 전체를 쓴다(정확 일치로 찾도록. 원본 오타 '둥록자수'도 그대로)
     // 항목의 첫 열이 아니면서 4행에 그 열만의 제목이 있으면(예: E-1 참여율, A-3-2 총정원) 4행을 쓴다
     const first = same[0]!.col === c.col;
-    const full = (!first && c.r4 ? c.r4 : c.r5 || c.r4).replace(/\s+/g, ' ').trim();
-    let label = full;
-    if (label.length > 40) {
-      const cut = label.slice(0, 40);
-      label = cut.includes(' ') ? cut.slice(0, cut.lastIndexOf(' ')) : cut;
-    }
+    const label = (!first && c.r4 ? c.r4 : c.r5 || c.r4).replace(/\s+/g, ' ').trim();
     key = `${c.code}|${label}`;
   }
   let ok = false;
@@ -86,14 +81,6 @@ for (const p of [basePath, ...verify]) {
   if (JSON.stringify(back) !== JSON.stringify(original)) throw new Error(`${p}: 규칙이 원래와 다르게 풀림`);
   if (JSON.stringify(fBack) !== JSON.stringify(formulasOriginal)) throw new Error(`${p}: 수식 위치가 원래와 다르게 풀림`);
 }
-// 원본 양식의 오타('둥록자수')는 규칙에서 바른 말로 적는다(머리글 비교가 오타에 너그러운지 함께 확인)
-const fixed = JSON.parse(JSON.stringify(rules).replace(/둥록자수/g, '등록자수'));
-for (const p of [basePath, ...verify]) {
-  const missing = new Set<string>();
-  const back = resolveDeep(await indexOf(p), stripText(fixed), missing);
-  if (missing.size || JSON.stringify(back) !== JSON.stringify(original)) throw new Error(`${p}: 오타 교정 뒤 풀림이 다름`);
-}
-Object.assign(rules, fixed);
 writeFileSync(rulesPath, JSON.stringify(rules, null, 2) + '\n');
 writeFileSync(formulasPath, JSON.stringify(formulas, null, 1) + '\n');
 const used = new Set((JSON.stringify(rules) + JSON.stringify(formulas)).match(/\{[^{}"]+\}/g) ?? []);

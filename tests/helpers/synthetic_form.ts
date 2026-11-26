@@ -19,15 +19,20 @@ export function layout2026(): Record<string, string> {
   return (JSON.parse(readFileSync(p, 'utf8')) as { cells: Record<string, string> }).cells;
 }
 
-/** 합성 양식 기준으로 규칙의 {항목 키}를 열 문자로 바꾼다 */
-export function resolveForLayout<T>(value: T, cells: Record<string, string> = layout2026()): T {
+/** 합성 양식 '전체' 머리글의 항목 색인 */
+export function layoutIndex(cells: Record<string, string> = layout2026()) {
   const sheet: Sheet = { name: '전체', index: 0, state: 'visible', cells: new Map(), merged: [], hyperlinks: [], embedded: [], drawingObjects: 0 };
   for (const [ref, v] of Object.entries(cells)) {
     const { row, col } = parseCoord(ref);
     sheet.cells.set(ref, { ref, row, col, value: v, type: 's', numFmt: 'General', isDate: false } as Cell);
   }
+  return buildItemIndex(sheet);
+}
+
+/** 합성 양식 기준으로 규칙의 {항목 키}를 열 문자로 바꾼다 */
+export function resolveForLayout<T>(value: T, cells: Record<string, string> = layout2026()): T {
   const missing = new Set<string>();
-  const out = resolveDeep(buildItemIndex(sheet), value, missing);
+  const out = resolveDeep(layoutIndex(cells), value, missing);
   if (missing.size) throw new Error(`합성 양식에서 찾지 못한 항목: ${[...missing].join(', ')}`);
   return out;
 }
