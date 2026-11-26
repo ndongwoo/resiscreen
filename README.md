@@ -149,6 +149,14 @@ GitHub Pages 주소에서 사람이 직접 확인합니다. 결과는 날짜와 
 7. **검사**: `npm test`, `npm run validate:rules`, 그리고 **`npm run scan:private`(0건 확인)**.
 8. **push**: main에 push하면 CI와 Pages 배포가 자동으로 돕니다. 배포 후 '배포 후 확인' 체크리스트를 진행합니다.
 
+**2027 양식 전에 할 일(개발)**: 문서 생성 도구가 아직 2026에 맞춰져 있습니다. 새 연도 규칙을 만들기 전에 정리합니다(`docs/OPEN_QUESTIONS.md` '2027 양식 준비'에도 같은 목록).
+
+- [ ] `tools/item_coverage.ts`의 연도 고정 없애기: 입력 경로(`rules/2026.json`, `data/forms/2026_formulas.json`·`2026_items.json`·`2026_layout.json`), 문서 제목('2026 심사 대상 190개'), 설명 문구('2026 양식', '2026 가이드라인', '2026 제외 유지')를 연도 인자와 규칙 파일 값(`form.year`)에서 만든다.
+- [ ] `EXTRA`(세부 시트 쪽 점검을 붙일 열)와 설명 문장의 열 문자(CU, DY, R, CT, 제외 열 표의 A·FM·FN·FP·FR·GB·GC·GP·GQ)를 항목 코드 기반(`{코드|머리글}` 키)으로 바꿔, 열이 끼어든 양식에서도 맞게 나오게 한다.
+- [ ] `RATIO_TEXT`(재계산 규칙 설명: '정원 기준 비율', '논문 점수 ÷ 전문의 수' 등)를 코드에서 빼고 규칙 파일의 설명 필드(예: 규칙마다 `coverage_text`)로 옮긴다. 스키마(`rules/schema.json`)도 함께 고친다.
+- [ ] `tests/helpers/synthetic_form.ts`의 `resolveForLayout`·`layoutIndex`(와 `layout2026`)를 `src/`나 `tools/lib/`로 옮긴다. 지금은 생성 도구(`tools/item_coverage.ts`)가 테스트 도우미를 가져다 쓴다.
+- [ ] 정리 뒤 `npm run gen:docs`로 2026 문서를 다시 만들어 바뀐 내용이 없는지 확인한다.
+
 ## 항목 키('전체' 시트의 열 찾기)
 
 규칙 파일에서 '전체' 시트의 칸은 `{항목코드|머리글}행번호`로 적습니다.

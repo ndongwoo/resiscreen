@@ -358,6 +358,16 @@ describe('생성 문서', () => {
     expect(sec).toMatch(/^\| k 수면무호흡 \| A-6-OSA-02 \|/m);
     expect(sec).toContain('PSG 시행일');
   });
+  it('켜진 규칙은 모두 ITEM_COVERAGE.md의 항목별 표나 세부 시트 규칙 절 중 한 곳에 나온다', () => {
+    const d = doc('ITEM_COVERAGE.md');
+    const items = d.slice(d.indexOf('## 항목별 표'), d.indexOf('## 세부 시트 규칙'));
+    const detail = d.slice(d.indexOf('## 세부 시트 규칙'), d.indexOf('## 혼동 주의 머리글'));
+    // 항목별 표: 점검 내용 칸의 [ID] 또는 [ID, ID]
+    const inItems = new Set([...items.matchAll(/\[([A-Z0-9, -]+)\]/g)].flatMap((m) => m[1]!.split(/,\s*/)));
+    const inDetail = new Set([...detail.matchAll(/^\| [^|]+ \| ([A-Z0-9-]+) \|/gm)].map((m) => m[1]!));
+    const missing = rules.rules.filter((r) => r.enabled && !inItems.has(r.id) && !inDetail.has(r.id)).map((r) => r.id);
+    expect(missing).toEqual([]);
+  });
   it('RULES.md: 규칙 파일의 모든 ID와 이전 ID 매핑이 있고, 이전 ID는 규칙에 남아 있지 않다', () => {
     const d = doc('RULES.md');
     for (const r of rules.rules) expect(d).toContain(`| ${r.id} |`);

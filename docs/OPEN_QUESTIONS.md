@@ -38,6 +38,15 @@
    - 점검 도구는 양식 수식대로 점수 기준으로 계산한다. 2027 양식에서 문구를 '논문 점수'로 맞추거나 계산식을 바꿀지 건의한다.
 8. **DOI(또는 PMID) 열 추가 건의**(근거: M1 보고서 7.1). 국문 제목 논문은 제목 검색으로 잘 찾아지지 않는다.
 
+### 개발 할 일(점검 도구, 2027 규칙을 만들기 전)
+문서 생성 도구가 아직 2026에 맞춰져 있다. README '새 연도 양식 추가 절차'에도 같은 목록이 있다.
+
+- [ ] `tools/item_coverage.ts`의 연도 고정 없애기: 입력 경로(`rules/2026.json`, `data/forms/2026_formulas.json`·`2026_items.json`·`2026_layout.json`), 문서 제목('2026 심사 대상 190개'), 설명 문구('2026 양식', '2026 가이드라인', '2026 제외 유지')를 연도 인자와 규칙 파일 값(`form.year`)에서 만든다.
+- [ ] `EXTRA`(세부 시트 쪽 점검을 붙일 열)와 설명 문장의 열 문자(CU, DY, R, CT, 제외 열 표의 A·FM·FN·FP·FR·GB·GC·GP·GQ)를 항목 코드 기반(`{코드|머리글}` 키)으로 바꿔, 열이 끼어든 양식에서도 맞게 나오게 한다.
+- [ ] `RATIO_TEXT`(재계산 규칙 설명: '정원 기준 비율', '논문 점수 ÷ 전문의 수' 등)를 코드에서 빼고 규칙 파일의 설명 필드(예: 규칙마다 `coverage_text`)로 옮긴다. 스키마(`rules/schema.json`)도 함께 고친다.
+- [ ] `tests/helpers/synthetic_form.ts`의 `resolveForLayout`·`layoutIndex`(와 `layout2026`)를 `src/`나 `tools/lib/`로 옮긴다. 지금은 생성 도구(`tools/item_coverage.ts`)가 테스트 도우미를 가져다 쓴다.
+- [ ] 정리 뒤 `npm run gen:docs`로 2026 문서를 다시 만들어 바뀐 내용이 없는지 확인한다.
+
 ## 논문·저널 목록
 9. **대한수면학회지**
     - 대한수면학회(Korean Society of Sleep Medicine) 학술지 'Sleep Medicine Research'(pISSN 2093-9175, eISSN 2233-8853)로 바로잡았다(개발자 확인 2026-11-26). KCI 목록과 ISSN으로 연결된다.

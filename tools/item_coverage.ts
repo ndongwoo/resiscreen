@@ -166,6 +166,8 @@ for (const r of rows) L.push(`| ${r.no} | ${r.col} | ${r.code} | ${esc(r.sub.sli
 
 // 세부 시트 규칙: '전체'가 아닌 시트에서 도는 규칙을 시트별로
 const SURGERY = '수술 시트 공통(a~l 12개)';
+/** 특정 시트가 아니라 파일 전체(양식 서명·시트 구성)를 보는 규칙 */
+const WHOLE_FILE = '(파일 전체)';
 const filled = fillMessages(raw);
 const COL_NAME: Record<string, string> = {
   date_col: '날짜',
@@ -179,6 +181,7 @@ const COL_NAME: Record<string, string> = {
 };
 function detailSheets(r: Rule): string[] {
   const t = r.target as any;
+  if (t.signature || t.required_sheets) return [WHOLE_FILE];
   if (r.type === 'paper') return ['논문'];
   if (t.from_surgery_sheets || r.id === 'A-6-DUP-01') return [SURGERY];
   if (t.pairs_from_surgery_sheets)
@@ -196,6 +199,8 @@ function columnsOf(r: Rule, sheet: string): string {
   if (Array.isArray(t.cols)) parts.push(`${t.cols.join('·')}(필수)`);
   if (Array.isArray(t.any_of)) parts.push(`${t.any_of.join('·')} 중 하나`);
   if (typeof t.total === 'string' && sheet !== SURGERY) parts.push(`${t.total}(총계)`);
+  if (t.signature) return '서명 칸(form.signature): 표지 B4, 전체 H4 등';
+  if (t.required_sheets) return '필수 시트(form.required_sheets)';
   if (r.id === 'S-SUM-01') {
     if (sheet === SURGERY) return '시트 총계(G1 등) ↔ 전체 A-6-4';
     const p = (t.pairs as { summary: string; sheet_total: string }[]).filter((x) => x.sheet_total.replace(/^'?([^'!]+)'?!.*$/, '$1') === sheet);
@@ -203,12 +208,12 @@ function columnsOf(r: Rule, sheet: string): string {
   }
   return parts.join(', ') || '-';
 }
-const ORDER = [SURGERY, ...rules.surgery_sheets.map((x) => x.sheet), 'A-6', 'B-2-3', '논문', 'A-3-2', 'A-3-3', 'A-10-3-d'];
+const ORDER = [WHOLE_FILE, SURGERY, ...rules.surgery_sheets.map((x) => x.sheet), 'A-6', 'B-2-3', '논문', 'A-3-2', 'A-3-3', 'A-10-3-d'];
 const bySheet = new Map<string, Rule[]>();
 for (const r of filled.rules) for (const sh of detailSheets(r)) bySheet.set(sh, [...(bySheet.get(sh) ?? []), r]);
 const sheetOrder = [...bySheet.keys()].sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
 L.push('', '## 세부 시트 규칙', '');
-L.push("'전체' 시트가 아닌 세부 시트(수술 시트·A-6·B-2-3·논문 등)에서 도는 규칙이다. 규칙 파일에서 자동으로 만든다. 꺼 둔 규칙은 결과를 내지 않는다.", '');
+L.push("'전체' 시트가 아닌 세부 시트(수술 시트·A-6·B-2-3·논문 등)에서 도는 규칙과, 파일 전체(양식 서명·필수 시트)를 보는 규칙이다. 규칙 파일에서 자동으로 만든다. 꺼 둔 규칙은 결과를 내지 않는다. 켜진 규칙은 모두 위 항목별 표나 이 절 중 한 곳에 나온다(테스트로 확인).", '');
 L.push('| 시트 | 규칙 | 단계 | 보는 칸 | 내용 |', '|---|---|---|---|---|');
 for (const sh of sheetOrder)
   for (const r of bySheet.get(sh)!) {
