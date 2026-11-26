@@ -5,6 +5,7 @@
 - 엑셀 파일은 브라우저 밖으로 나가지 않습니다. 서버가 없습니다.
 - 이 도구는 판정하지 않습니다. 빈칸, 형식 위반, 기간 의심, 서지 불일치 같은 '확인할 점'만 알려 줍니다. 최종 판정은 사무국과 수련위원이 합니다.
 - 판단 규칙은 코드가 아니라 `rules/<연도>.json`에 있습니다.
+- **배포 주소: https://nam.md/resiscreen/** (저장소 `ndongwoo/resiscreen`의 GitHub Pages. 계정의 사용자 사이트에 사용자 지정 도메인 `nam.md`가 설정되어 있어, `https://ndongwoo.github.io/resiscreen/`는 이 주소로 연결됩니다)
 
 > GitHub 웹 화면에서 규칙을 고치고 자동 배포를 확인하는 자세한 절차와 비개발자용 규칙 설명(RULES.md)은 마일스톤 6에서 채웁니다.
 
@@ -134,14 +135,14 @@ GitHub Pages 주소에서 사람이 직접 확인합니다. 결과는 날짜와 
 
 ## 저장소 이전(학회 조직 계정으로)
 
-처음에는 개인 계정(`ndongwoo/resiscreen`)에 두고, 학회 조직 계정이 생기면 옮깁니다.
+처음에는 개인 계정(`ndongwoo/resiscreen`, 배포 주소 https://nam.md/resiscreen/)에 두고, 학회 조직 계정이 생기면 옮깁니다.
 
 1. **이전(Transfer)**: 저장소 → Settings → General 맨 아래 'Danger Zone' → **Transfer** → 새 소유자(학회 조직)와 저장소 이름을 입력합니다. 옮기는 사람은 조직에서 저장소를 만들 수 있는 권한이 있어야 합니다.
    - 이슈·커밋 이력·Actions 워크플로는 함께 옮겨지고, 예전 `github.com/ndongwoo/resiscreen` 주소는 새 주소로 자동 연결됩니다(git clone·push 포함).
 2. **Pages 주소는 자동으로 연결되지 않습니다.**
-   - 이전 뒤 배포 주소는 `https://<조직>.github.io/resiscreen/`로 바뀝니다. 예전 `https://ndongwoo.github.io/resiscreen/`는 404가 됩니다.
+   - 이전 뒤 배포 주소는 `https://<조직>.github.io/resiscreen/`(조직에 사용자 지정 도메인이 있으면 그 도메인)로 바뀝니다. 예전 주소 `https://nam.md/resiscreen/`(= `ndongwoo.github.io/resiscreen/`)는 404가 됩니다.
    - 새 저장소에서 Settings → Pages → Source가 'GitHub Actions'인지 확인하고, Actions에서 `pages` 워크플로를 한 번 실행(Run workflow)해 다시 배포합니다.
-3. **예전 주소에서 새 주소로 보내기(선택)**: 병원 담당자가 예전 주소를 북마크했을 수 있으므로, 개인 계정의 사용자 사이트 저장소 `ndongwoo/ndongwoo.github.io`에 아래 파일을 `resiscreen/index.html`로 둡니다. 이 저장소의 Pages가 켜져 있어야 합니다(Settings → Pages → Source: 'Deploy from a branch', main / root).
+3. **예전 주소에서 새 주소로 보내기(선택)**: 병원 담당자가 예전 주소를 북마크했을 수 있으므로, 개인 계정의 사용자 사이트 저장소 `ndongwoo/ndongwoo.github.io`(현재 `nam.md`를 서비스하는 저장소)에 아래 파일을 `resiscreen/index.html`로 둡니다. 그러면 `https://nam.md/resiscreen/`과 `https://ndongwoo.github.io/resiscreen/` 모두 새 주소로 넘어갑니다. 그 저장소의 Pages가 켜져 있어야 합니다.
 
    ```html
    <!doctype html>
