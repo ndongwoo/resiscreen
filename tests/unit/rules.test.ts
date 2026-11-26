@@ -270,7 +270,11 @@ describe('recalc', () => {
     expect(by((await run(patch('전체', { DT6: { f: "'A-3-2'!C9", v: 0 }, DU8: '#DIV/0!' }))).findings, 'B-2-3-RECALC')).toHaveLength(0);
   });
   it('C-4: 논문 점수 ÷ 전문의 수', async () => {
-    expect(by((await run(patch('전체', { FO6: { f: 'DZ6/I6', v: 2 / 8 } }))).findings, 'C-4-RECALC')).toHaveLength(1);
+    expect(by((await run(patch('전체', { FO6: { f: 'DZ6/I6', v: 2 / 8 } }))).findings, 'C-4-RECALC').map((f) => f.level)).toEqual(['ERROR']);
+  });
+  it('재계산 단계 통일: 양식 수식대로 계산하는 규칙은 ERROR, 해석이 필요한 A-2-2만 WARNING', () => {
+    const level = Object.fromEntries(rules.rules.filter((r) => r.type === 'recalc').map((r) => [r.id, r.level]));
+    expect(level).toEqual({ 'A-2-2-RECALC': 'WARNING', 'B-5-RECALC': 'ERROR', 'C-4-RECALC': 'ERROR', 'B-4-3-RECALC': 'ERROR', 'B-2-3-RECALC': 'ERROR' });
   });
 });
 

@@ -40,6 +40,10 @@ for (const r of RENAMED) L.push(`| ${r.from} | ${r.to} | ${r.since} | ${esc(r.re
 L.push('', '## 규칙 파일(rules/' + rules.form.year + '.json)', '');
 L.push('| ID | 종류 | 단계 | 사용 | 내용 |', '|---|---|---|---|---|');
 for (const r of rules.rules) L.push(`| ${r.id} | ${r.type} | ${r.level} | ${r.enabled ? '켬' : '끔'} | ${esc(r.message)} |`);
+L.push('', '## 재계산 규칙의 단계', '');
+L.push('양식 수식대로 다시 계산했는데 값이 다르면(수식 훼손·값 덮어쓰기) ERROR, 해석 차이가 있을 수 있으면 WARNING.', '');
+L.push('| ID | 단계 | 내용 |', '|---|---|---|');
+for (const r of rules.rules.filter((x) => x.type === 'recalc')) L.push(`| ${r.id} | ${r.level} | ${esc(r.message)} |`);
 L.push('', '## 코드가 직접 내는 결과', '', '| ID | 단계 | 내용 |', '|---|---|---|');
 for (const [id, lv, t] of BUILTIN) L.push(`| ${id} | ${lv} | ${t} |`);
 writeFileSync(join(root, 'docs/RULES.md'), L.join('\n') + '\n');
