@@ -45,7 +45,7 @@ export interface SurgerySheet {
   date_col?: string;
 }
 
-export { lastDayOfFeb, resolveReference, withResolvedReference, type EffectiveRuleSet, type Period, type ResolvedReference } from './reference.ts';
+export { fillMessages, fillText, lastDayOfFeb, messageVars, resolveReference, withResolvedReference, type EffectiveRuleSet, type Period, type ResolvedReference } from './reference.ts';
 import type { EffectiveRuleSet, ResolvedReference } from './reference.ts';
 
 export interface RuleSet {

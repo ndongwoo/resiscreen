@@ -68,7 +68,7 @@ export function ratios(ctx: Context, rule: Rule): Finding[] {
           sheet: s,
           cell: r,
           itemCode: itemCodeFor(ctx.wb.sheetByName.get(s), parseCoord(r).col),
-          message: `B-5 분모(전공의 총 정원) ${a}가 A-3-2 정원 합계 ${b}와 다릅니다. 현재 인원이 아니라 총 정원으로 나눠야 합니다.`,
+          message: `B-5 분모(전공의 총 정원) ${a}가 양식 수식대로 가져온 A-3-2 정원 합계 ${b}와 다릅니다. 수식이 지워졌거나 값을 직접 고쳤는지 확인하세요(현재 인원이 아니라 총 정원으로 나눕니다).`,
           detail: { denominator: a, expected: b },
         }),
       );

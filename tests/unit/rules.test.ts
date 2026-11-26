@@ -1,6 +1,7 @@
 /** 규칙 타입별 단위 테스트(합성 통합문서). 실제 병원 파일을 쓰지 않는다. */
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { fillMessages, messageVars } from '../../src/engine/rules.ts';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkWorkbook } from '../../src/engine/index.ts';
@@ -278,6 +279,46 @@ describe('recalc', () => {
   });
 });
 
+describe('메시지 자리표시(연도·기준일)', () => {
+  const ruleFiles = readdirSync(join(dirname(fileURLToPath(import.meta.url)), '../../rules')).filter((f) => /^\d{4}\.json$/.test(f));
+  const raw = (f: string) => JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../rules', f), 'utf8')) as typeof rules;
+  it.each(ruleFiles)('%s: 규칙 메시지·양식 이름에 4자리 연도를 직접 적지 않는다', (f) => {
+    const r = raw(f);
+    const texts = [['form.label', r.form.label], ...r.rules.flatMap((x) => [[x.id, x.message], [`${x.id}.message_referenced`, x.message_referenced ?? '']])];
+    for (const [where, t] of texts) expect(t, where).not.toMatch(/(?<!\d)\d{4}(?!\d)/);
+  });
+  it.each(ruleFiles)('%s: 채운 뒤 모르는 자리표시가 남지 않는다', (f) => {
+    const r = fillMessages(raw(f));
+    for (const t of [r.form.label, ...r.rules.flatMap((x) => [x.message, x.message_referenced ?? ''])]) expect(t).not.toMatch(/\{[a-z_0-9]+\}/);
+  });
+  it('2026: 채운 문구가 바꾸기 전 문구와 같다', () => {
+    const r = fillMessages(rules);
+    const m = Object.fromEntries(r.rules.map((x) => [x.id, x.message]));
+    expect(r.form.label).toBe('2026년도 수련실태조사 (2025년 1/1일~12/31일 실적)');
+    expect(m['S-FORM-01']).toBe('지원하지 않는 양식입니다. 2026년도 수련실태조사 양식인지 확인하세요.');
+    expect(m['A-6-DATE-LIMIT']).toBe("수술 날짜가 'O월 O일' 형식이라 연도가 없어 2025년 1~12월 기간 검사를 자동으로 할 수 없습니다(연도가 적힌 행만 검사).");
+    expect(m['A-6-DATE-01']).toBe('수술(검사) 날짜가 2025년 1~12월 밖입니다.');
+    expect(m['P-PERIOD-MARFEB']).toBe('B-2-3: 학술대회 일시가 2025년 3월~2026년 2월 밖입니다.');
+    expect(m['P-PERIOD-LIMIT']).toBe("A-3-3(파견기간 '0개월')·A-10-3(월별 당직표)은 날짜 칸이 없어 2025년 3월~2026년 2월 기간 검사를 자동으로 할 수 없습니다.");
+  });
+  it('다른 해에는 그 해 기준일로 채운다(2028 윤년 포함)', () => {
+    const v27 = messageVars({ ...rules, form: { ...rules.form, year: 2027 } });
+    expect(v27).toMatchObject({ form_year: '2027', perf_period: '2026년 1~12월', marfeb_period: '2026년 3월~2027년 2월', staff_count_date: '2026년 9월 30일' });
+    expect(messageVars({ ...rules, form: { ...rules.form, year: 2028 } }).feb_end).toBe('2028년 2월 29일');
+    // reference에 직접 적은 기간이 있으면 그 값으로
+    const custom = messageVars({ ...rules, reference: { ...rules.reference, period_default: { start: '2025-03-01', end: '2025-12-15' } } });
+    expect(custom.perf_period).toBe('2025년 3월 1일~2025년 12월 15일');
+  });
+  it('재계산 메시지: 양식 수식대로 계산한 값과 다름 → 수식 훼손·값 덮어쓰기 확인', () => {
+    for (const id of ['B-5-RECALC', 'C-4-RECALC', 'B-4-3-RECALC', 'B-2-3-RECALC']) {
+      const msg = rules.rules.find((r) => r.id === id)!.message;
+      expect(msg, id).toContain('양식 수식(');
+      expect(msg, id).toContain('수식이 지워졌거나 값을 직접 고쳤는지 확인하세요.');
+    }
+    expect(rules.rules.find((r) => r.id === 'C-4-RECALC')!.message).toBe('C-4: 양식 수식(논문 점수 ÷ 전체 시트의 총 전문의 수)으로 계산한 값과 다릅니다. 수식이 지워졌거나 값을 직접 고쳤는지 확인하세요.');
+  });
+});
+
 describe('생성 문서', () => {
   const doc = (name: string) => readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../docs', name), 'utf8');
   it('ITEM_COVERAGE.md: 한 항목에 같은 점검이 두 번 나오지 않는다(DU·GA 6·8행 수식)', () => {
@@ -291,6 +332,13 @@ describe('생성 문서', () => {
     expect(du).toContain('자동계산 수식 훼손 WARNING [S-FORMULA-01] (6·8행)');
     expect(du).toContain('[B-2-3-RECALC]');
     expect(rows.find((l) => l.includes('| EA |'))).toContain('[B-4-3-RECALC]');
+  });
+  it('꺼 둔 B-6-EPORTFOLIO는 B-6 칸이 비어도 결과(INFO 포함)를 내지 않고, 문서도 그렇게 적는다', async () => {
+    const r = await run(patch('전체', { EF7: undefined, EG7: undefined, EM7: undefined }));
+    expect(r.findings.filter((f) => f.ruleId === 'B-6-EPORTFOLIO' || /^E[F-M]7$/.test(f.cell ?? ''))).toEqual([]);
+    for (const name of ['RULES.md', 'ITEM_COVERAGE.md']) expect(doc(name)).not.toMatch(/빈칸 INFO\(비활성\)|INFO만\)/);
+    expect(doc('RULES.md')).toContain('| B-6-EPORTFOLIO | required | INFO | 끔(결과 없음) |');
+    expect(doc('RULES.md')).toContain('| S-DTYPE-NUM | dtype | ERROR/WARNING(수식 참조 여부에 따라) |');
   });
   it('RULES.md: 규칙 파일의 모든 ID와 이전 ID 매핑이 있고, 이전 ID는 규칙에 남아 있지 않다', () => {
     const d = doc('RULES.md');

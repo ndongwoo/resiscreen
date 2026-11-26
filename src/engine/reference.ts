@@ -66,3 +66,58 @@ export function withResolvedReference(rules: RuleSet): EffectiveRuleSet {
   return { ...rules, reference: { ...(rules.reference ?? {}), ...resolveReference(rules) } };
 }
 
+
+/** 'YYYY-MM-DD' → 'YYYY년 M월 D일' */
+export function koDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${y}년 ${m}월 ${d}일`;
+}
+
+/** 기간을 문구로: 같은 해 1~12월이면 'YYYY년 1~12월', 달 단위면 'YYYY년 M월~YYYY년 M월', 아니면 날짜 그대로 */
+export function koPeriod(p: Period): string {
+  const [sy, sm, sd] = p.start.split('-').map(Number) as [number, number, number];
+  const [ey, em, ed] = p.end.split('-').map(Number) as [number, number, number];
+  const monthEnd = ed === new Date(Date.UTC(ey, em, 0)).getUTCDate();
+  if (sd === 1 && monthEnd) {
+    if (sy === ey) return `${sy}년 ${sm}~${em}월`;
+    return `${sy}년 ${sm}월~${ey}년 ${em}월`;
+  }
+  return `${koDate(p.start)}~${koDate(p.end)}`;
+}
+
+/** 메시지 자리표시 → 값. 규칙 메시지에는 연도·날짜를 직접 적지 않고 이 이름을 쓴다 */
+export function messageVars(rules: Pick<RuleSet, 'form' | 'reference'>): Record<string, string> {
+  const r = resolveReference(rules);
+  return {
+    form_year: String(rules.form.year),
+    prev_year: String(rules.form.year - 1),
+    perf_period: koPeriod(r.period_default),
+    marfeb_period: koPeriod(r.period_mar_feb),
+    staff_count_date: koDate(r.staff_count_date),
+    paper_year: String(r.paper_year),
+    eval_may1: koDate(r.eval_may1),
+    prev_oct1: koDate(r.prev_oct1),
+    feb_end: koDate(r.feb_end),
+  };
+}
+
+const MESSAGE_VAR = /\{([a-z_0-9]+)\}/g;
+
+/** 문구 안의 {자리표시}를 채운다. 모르는 이름은 그대로 둔다(테스트가 남은 자리표시를 잡는다) */
+export function fillText(text: string, vars: Record<string, string>): string {
+  return text.replace(MESSAGE_VAR, (m, k: string) => vars[k] ?? m);
+}
+
+/** 규칙의 사용자에게 보이는 문구(form.label, 규칙 message·message_referenced)에 계산된 기준일을 채운다 */
+export function fillMessages<T extends RuleSet>(rules: T): T {
+  const vars = messageVars(rules);
+  return {
+    ...rules,
+    form: { ...rules.form, label: fillText(rules.form.label, vars) },
+    rules: rules.rules.map((r) => ({
+      ...r,
+      message: fillText(r.message, vars),
+      ...(r.message_referenced === undefined ? {} : { message_referenced: fillText(r.message_referenced, vars) }),
+    })),
+  };
+}

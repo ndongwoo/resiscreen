@@ -1,6 +1,6 @@
 /** 엔진 진입점. 브라우저(Web Worker)·Node CLI·테스트가 같은 함수를 쓴다. DOM 의존 없음. */
 import { loadWorkbook, WorkbookError, type LoadOptions } from './xlsx/workbook.ts';
-import { buildReferenceIndex, checkSignature, rulesFingerprint, runRules, withResolvedReference, type Context, type FormFormulas, type RuleSet } from './rules.ts';
+import { buildReferenceIndex, checkSignature, fillMessages, rulesFingerprint, runRules, withResolvedReference, type Context, type FormFormulas, type RuleSet } from './rules.ts';
 import { buildItemIndex, newResolveLog, resolveDeep, type ItemColumn } from './columns.ts';
 import { sortFindings, summarize, type Finding, type Report } from './report.ts';
 import { runPaperStage } from './checks/papers.ts';
@@ -68,7 +68,8 @@ export async function checkWorkbook(input: CheckInput): Promise<Report> {
 export async function checkWorkbookSession(input: CheckInput): Promise<{ report: Report; session: CheckSession | null }> {
   const now = input.now ?? (() => Date.now());
   const t0 = now();
-  const candidates = (Array.isArray(input.rules) ? input.rules : [input.rules]).slice().sort((a, b) => b.form.year - a.form.year);
+  // 메시지의 {자리표시}(연도·기준일)를 그 해 규칙의 계산된 값으로 채운다
+  const candidates = (Array.isArray(input.rules) ? input.rules : [input.rules]).map(fillMessages).sort((a, b) => b.form.year - a.form.year);
   if (!candidates.length) throw new Error('규칙 파일이 없습니다');
   const base: Omit<Report, 'findings' | 'summary' | 'supported' | 'formYear'> = {
     tool: toolInfo(input, candidates[0]!),

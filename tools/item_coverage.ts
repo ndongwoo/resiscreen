@@ -41,7 +41,8 @@ const rule = (id: string): Rule => {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 for (const x of rules.rules) {
   const t = x.target as any;
-  const tag = (s: string) => (x.enabled ? s : `${s}(비활성)`);
+  // 꺼 둔 규칙은 실행하지 않으므로 결과가 없다(빈칸이어도 INFO조차 내지 않음)
+  const tag = (s: string) => (x.enabled ? s : '검사 안 함(규칙 비활성, 결과 없음)');
   if (t.sheet === '전체' && x.type === 'required') {
     for (const c of expandAll(t.ranges ?? [])) add(c, `${tag(`빈칸 ${x.level}${t.when ? ' (조건부)' : ''}`)} [${x.id}]`);
     for (const c of t.cells ?? [])
@@ -53,7 +54,7 @@ const direct = rule('S-REQ-DIRECT') as any;
 const exc = new Set(expandAll((direct.exceptions ?? []).flatMap((e: any) => e.cells)));
 for (const c of expandAll(direct.target.ranges)) {
   if (exc.has(c)) continue;
-  add(c, '형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]');
+  add(c, '형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]');
   add(c, '7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]');
 }
 for (const c of formulas.sheets['전체']?.cells ?? []) add(c, '자동계산 수식 훼손 WARNING [S-FORMULA-01]');
@@ -153,7 +154,7 @@ for (const [k, n] of [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].loc
 L.push('', '## 입력 방식이 선택·직접 입력인데 빈칸 검사가 없는 항목', '', '| 열 | 항목 | 세부 | 이유 |', '|---|---|---|---|');
 for (const g of gaps) {
   const reason = g.checks.some((x) => x.includes('B-6-EPORTFOLIO'))
-    ? 'B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만)'
+    ? 'B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음)'
     : '확인 필요';
   L.push(`| ${g.col} | ${g.code} | ${esc(g.sub)} | ${reason} |`);
 }

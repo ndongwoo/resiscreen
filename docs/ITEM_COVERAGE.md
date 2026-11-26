@@ -1,6 +1,6 @@
 # 2026 심사 대상 190개 항목별 점검 범위
 
-> 기준: 2026 심사 대상 항목 확인표(학회 수련위원 확인, 190개 모두 '맞음'). 셀 위치는 2026 양식 기준이며, 규칙은 열 문자 대신 항목 코드·머리글로 열을 찾는다. 병원 입력값은 담지 않았다. 규칙 2026.8.1. `npm run gen:docs`로 다시 만든다(tools/item_coverage.ts).
+> 기준: 2026 심사 대상 항목 확인표(학회 수련위원 확인, 190개 모두 '맞음'). 셀 위치는 2026 양식 기준이며, 규칙은 열 문자 대신 항목 코드·머리글로 열을 찾는다. 병원 입력값은 담지 않았다. 규칙 2026.8.2. `npm run gen:docs`로 다시 만든다(tools/item_coverage.ts).
 
 ## 요약
 
@@ -21,14 +21,14 @@
 
 | 열 | 항목 | 세부 | 이유 |
 |---|---|---|---|
-| EF | B-6-1 | 1 전공의 인적사항 | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EG | B-6-1 | 2 수련기록(수련기간, 기관 등) | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EH | B-6-1 | 3 취급 환자 기록 | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EI | B-6-1 | 4 원외 학술회의 참석기록(참석기록부, 대회명, 일시, 장소) | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EJ | B-6-1 | 5 발표논문기록(저자, 제목, 발표잡지, 과장 확인) | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EK | B-6-1 | 6 타과 파견 근무 기록 | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EL | B-6-2 |  | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
-| EM | B-6-3 |  | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO 비활성(빈칸은 INFO만) |
+| EF | B-6-1 | 1 전공의 인적사항 | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EG | B-6-1 | 2 수련기록(수련기간, 기관 등) | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EH | B-6-1 | 3 취급 환자 기록 | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EI | B-6-1 | 4 원외 학술회의 참석기록(참석기록부, 대회명, 일시, 장소) | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EJ | B-6-1 | 5 발표논문기록(저자, 제목, 발표잡지, 과장 확인) | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EK | B-6-1 | 6 타과 파견 근무 기록 | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EL | B-6-2 |  | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
+| EM | B-6-3 |  | B-6 e-Portfolio: 양식상 심사 항목이나 2026 가이드라인상 해당 없음(가이드라인 4.6). 2026 규칙에서 B-6-EPORTFOLIO를 꺼 두어 검사하지 않음(빈칸이어도 결과 없음) |
 
 ## 세부 시트 입력 항목 중 자동 점검이 없는 것
 
@@ -45,13 +45,13 @@
 | 4 | E | A-1-2 | 3 수련 평가 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 5 | F | A-1-2 | 4 복무 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 6 | G | A-1-2 | 5 휴가 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 7 | H | A-2-1 | 1 총 전문의 수 (지도전문의 교육 및 여부 상관 없이 소속된 모든 전문 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(staff_count_date) WARNING [S-DATE-HDR] |
-| 8 | I | A-2-1 | 2 정원책정 지도전문의 수 | 직접 입력(숫자 등) | 빈칸·형식·재계산·대조 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; A-2-2 재계산의 N [A-2-2-RECALC] |
+| 7 | H | A-2-1 | 1 총 전문의 수 (지도전문의 교육 및 여부 상관 없이 소속된 모든 전문 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(staff_count_date) WARNING [S-DATE-HDR] |
+| 8 | I | A-2-1 | 2 정원책정 지도전문의 수 | 직접 입력(숫자 등) | 빈칸·형식·재계산·대조 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; A-2-2 재계산의 N [A-2-2-RECALC] |
 | 9 | J | A-2-2 |  | 선택(목록에서 고름) | 빈칸·형식·재계산·대조 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 재계산: n ≤ N-3 WARNING [A-2-2-RECALC] |
 | 10 | K | A-2-3 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 11 | L | A-2-4 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 12 | M | A-2-5 | 1 지도전문의 수 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(eval_may1) WARNING [S-DATE-HDR] |
-| 13 | N | A-2-5 | 2 정원책정 지도전문의 수 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 12 | M | A-2-5 | 1 지도전문의 수 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(eval_may1) WARNING [S-DATE-HDR] |
+| 13 | N | A-2-5 | 2 정원책정 지도전문의 수 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
 | 14 | O | A-3-1 |  | 세부 시트에 입력 | 형식 | 머리글 기준일(eval_may1) WARNING [S-DATE-HDR] |
 | 15 | P | A-3-2 |  | 세부 시트에 입력 | 형식·재계산·대조 | 머리글 기준일(prev_oct1) WARNING [S-DATE-HDR]; B-5 분모·A-2-2 n(A-3-2 시트) 재계산에 사용 |
 | 16 | Q | A-3-2 | * 보건복지부 책정 정원 수 (1,2,3,4년차 정원 합)와 군파견 전공 | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 증빙 합계 대조 ERROR('A-3-2'!B9) [S-SUM-01]; B-5 분모 = A-3-2 정원 합계 ERROR [B-5-RECALC] |
@@ -137,7 +137,7 @@
 | 96 | CS | A-10-3 | c. 상급년차(3,4년차) 당직참여 비율 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 97 | CT | A-10-3 | d. 전공의 월별 당직 현황 | 세부 시트에 입력 | 기타 | 기간 검사 불가 INFO [P-PERIOD-LIMIT] (A-10-3-d 시트) |
 | 98 | CU | A-11-1 |  | 세부 시트에 입력 | 검사 없음 | - |
-| 99 | CV | A-11-2 | a. 출산전후 휴가 사용 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 99 | CV | A-11-2 | a. 출산전후 휴가 사용 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
 | 100 | CW | A-11-2 | b. a 인원 모두 90일의 출산전후 휴가를 사용하였다. | 선택(목록에서 고름) | 예외·빈칸·형식 | 예외(form_wording) → S-REQ-SEL-COND [S-REQ-SEL]; 빈칸 ERROR (조건부: CV6 > 0) [S-REQ-SEL-COND]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 101 | CX | B-1-1 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 102 | CY | B-1-2 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
@@ -151,21 +151,21 @@
 | 110 | DG | B-1-4 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 111 | DH | B-1-5 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 112 | DI | B-1-6 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 113 | DJ | B-2-1 | 1 2년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
-| 114 | DK | B-2-1 | 2 3년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
-| 115 | DL | B-2-1 | 3 4년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 113 | DJ | B-2-1 | 1 2년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 114 | DK | B-2-1 | 2 3년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 115 | DL | B-2-1 | 3 4년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
 | 116 | DM | B-2-2 | a. 원내 학술활동 기록 보관 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 117 | DN | B-2-2 | b. 증례토론회 실시 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 118 | DO | B-2-2 | c. 학술잡지 초독회 실시 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 119 | DP | B-2-2 | d. 타과 합동 학술집담회 실시 횟수 (영상의학과, 병리과, 기타 회당  | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 119 | DP | B-2-2 | d. 타과 합동 학술집담회 실시 횟수 (영상의학과, 병리과, 기타 회당  | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
 | 120 | DQ | B-2-2 | e. 교수 또는 staff 특강 실시 (외부연자 특강 포함) | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 121 | DR | B-2-2 | f. 해부실습 시행 여부 (Cadaver dissection) | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 122 | DS | B-2-3 | a. 2025년 외부 학술대회 총 참석 횟수 | 직접 입력(숫자 등) | 빈칸·형식·재계산·대조 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 증빙 합계 대조 ERROR('B-2-3'!F13) [S-SUM-01]; B-2-3 시트 행사 점검 WARNING [B-2-3-KIND, B-2-3-DUP, B-2-3-ROWS, P-PERIOD-MARFEB] |
+| 122 | DS | B-2-3 | a. 2025년 외부 학술대회 총 참석 횟수 | 직접 입력(숫자 등) | 빈칸·형식·재계산·대조 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 증빙 합계 대조 ERROR('B-2-3'!F13) [S-SUM-01]; B-2-3 시트 행사 점검 WARNING [B-2-3-KIND, B-2-3-DUP, B-2-3-ROWS, P-PERIOD-MARFEB] |
 | 123 | DT | B-2-3 | b. 2025년 10/ 1일 실제 근무 전공의 총 수 | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 증빙 합계 대조 ERROR('A-3-2'!C9) [S-SUM-01]; 머리글 기준일(prev_oct1) WARNING [S-DATE-HDR] |
 | 124 | DU | B-2-3 | a/b | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01] (6·8행); 재계산: 참석 횟수 ÷ 10/1 근무 전공의 수 ERROR [B-2-3-RECALC] |
-| 125 | DV | B-3-1 | 1 2년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
-| 126 | DW | B-3-1 | 2 3년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
-| 127 | DX | B-3-1 | 3 4년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 125 | DV | B-3-1 | 1 2년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 126 | DW | B-3-1 | 2 3년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 127 | DX | B-3-1 | 3 4년차 미 준수 인원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
 | 128 | DY | B-4-1 |  | 세부 시트에 입력 | 검사 없음 | - |
 | 129 | DZ | B-4-2 |  | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 증빙 합계 대조 ERROR(논문!R2) [S-SUM-01]; 논문 시트 검사(P-*) 전체 |
 | 130 | EA | B-4-3 | 평가전년도 발표 논문 총 수/평가전년도 전공의 총 정원수 | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 재계산: 논문 점수 ÷ 전공의 총 정원 ERROR [B-4-3-RECALC] |
@@ -173,14 +173,14 @@
 | 132 | EC | B-5-2 | 평가전년도 외래환자 연인원/평가전년도 전공의 총 정원수 | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 재계산: 정원 기준 비율 ERROR [B-5-RECALC] |
 | 133 | ED | B-5-3 | 평가전년도 주요 수술 건수/평가전년도 전공의 총 정원수 | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 재계산: 정원 기준 비율 ERROR [B-5-RECALC] |
 | 134 | EE | B-5-4 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 135 | EF | B-6-1 | 1 전공의 인적사항 | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 136 | EG | B-6-1 | 2 수련기록(수련기간, 기관 등) | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 137 | EH | B-6-1 | 3 취급 환자 기록 | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 138 | EI | B-6-1 | 4 원외 학술회의 참석기록(참석기록부, 대회명, 일시, 장소) | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 139 | EJ | B-6-1 | 5 발표논문기록(저자, 제목, 발표잡지, 과장 확인) | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 140 | EK | B-6-1 | 6 타과 파견 근무 기록 | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 141 | EL | B-6-2 |  | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 142 | EM | B-6-3 |  | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 빈칸 INFO(비활성) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 135 | EF | B-6-1 | 1 전공의 인적사항 | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 136 | EG | B-6-1 | 2 수련기록(수련기간, 기관 등) | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 137 | EH | B-6-1 | 3 취급 환자 기록 | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 138 | EI | B-6-1 | 4 원외 학술회의 참석기록(참석기록부, 대회명, 일시, 장소) | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 139 | EJ | B-6-1 | 5 발표논문기록(저자, 제목, 발표잡지, 과장 확인) | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 140 | EK | B-6-1 | 6 타과 파견 근무 기록 | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 141 | EL | B-6-2 |  | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
+| 142 | EM | B-6-3 |  | 선택(목록에서 고름) | 예외·형식 | 예외(guideline) → B-6-EPORTFOLIO [S-REQ-SEL]; 검사 안 함(규칙 비활성, 결과 없음) [B-6-EPORTFOLIO]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 143 | EN | B-7-1 |  | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 144 | EO | B-7-2 | 1 평가 시기(또는 주기) | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 145 | EP | B-7-2 | 2 평가자 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
@@ -204,7 +204,7 @@
 | 163 | FH | B-10-2 | 2 교수 개발 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 164 | FI | B-10-2 | 3 교육수련 프로그램 수료자의 성적 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 165 | FJ | B-10-2 | 4 교육수련 프로그램의 질 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 166 | FK | C-1-1 | 수련병원 정원책정 지도전문의로서의 경력 합산년수 (2026년 5/1일 기 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(eval_may1) WARNING [S-DATE-HDR] |
+| 166 | FK | C-1-1 | 수련병원 정원책정 지도전문의로서의 경력 합산년수 (2026년 5/1일 기 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(eval_may1) WARNING [S-DATE-HDR] |
 | 167 | FL | C-1-1 | 1 총 전공의 수(A) × 5 이상 2 총 전공의 수(A) × (2 이상 | 자동 계산(수식) | 형식 | 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
 | 168 | FO | C-4-1 | 2025년 발표 논문 총 수/2025년 9월 30일 기준 전체 전문의 총 | 자동 계산(수식) | 형식·재계산·대조 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 재계산: 논문 점수 ÷ 전문의 수 ERROR [C-4-RECALC] |
 | 169 | FQ | D-1 / a |  | 현장 조사·서술 | 예외 | 예외(form_wording) [S-REQ-SEL] |
@@ -212,10 +212,10 @@
 | 171 | FT | D-1 / c | 수술 전/후의 진단명, 수술 소견, 수술 수기, 지도전문의 cosign | 현장 조사·서술 | 예외 | 예외(form_wording) [S-REQ-SEL] |
 | 172 | FU | D-1 / d | 병력/진단/처치/예후, 향후 추적계획, 지도전문의 cosign | 현장 조사·서술 | 예외 | 예외(form_wording) [S-REQ-SEL] |
 | 173 | FV | E-1 |  | 자동 계산(수식) | 형식 | 자동계산 수식 훼손 WARNING [S-FORMULA-01]; 머리글 기준일(prev_oct1) WARNING [S-DATE-HDR] |
-| 174 | FW | E-1 |  | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 174 | FW | E-1 |  | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
 | 175 | FX | E-1 | 경조사, 병가, 분만휴가, 극제학회 참석 등은 증빙제출시 참여한 것으로  | 선택(목록에서 고름) | 예외·빈칸·형식 | 예외(none) → S-REQ-SEL-COND2, S-FX7-NA [S-REQ-SEL]; 빈칸 ERROR (조건부: FV6 > 0) [S-REQ-SEL-COND2]; 빈칸 WARNING (조건부: FV6 <= 0) [S-FX7-NA]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] |
-| 176 | FY | E-2 / a | E-learning 등록자수 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
-| 177 | FZ | E-2 / a | 평가년도 (2026년) 2월말일 기준 전공의 근무 현원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자(수식 참조 칸이면 ERROR, 아니면 WARNING) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(feb_end) WARNING [S-DATE-HDR] |
+| 176 | FY | E-2 / a | E-learning 등록자수 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01] |
+| 177 | FZ | E-2 / a | 평가년도 (2026년) 2월말일 기준 전공의 근무 현원 | 직접 입력(숫자 등) | 빈칸·형식 | 빈칸 ERROR [S-REQ-DIRECT]; 형식: 숫자 ERROR/WARNING(수식 참조 여부에 따라) [S-DTYPE-NUM]; 7행에 숫자 입력 여부 ERROR [S-WRONGROW-01]; 머리글 기준일(feb_end) WARNING [S-DATE-HDR] |
 | 178 | GA | E-2 / a | 전공의 둥록자수/평가년도 2월말일 기준 전공의 현원 | 선택(목록에서 고름) | 빈칸·형식 | 빈칸 ERROR [S-REQ-SEL]; 자동계산 수식 훼손 WARNING [S-FORMULA-01] (6·8행) |
 | 179 | GD | E-3-1 |  | 현장 조사·서술 | 예외 | 예외(form_wording) [S-REQ-SEL] |
 | 180 | GE | E-3-2 |  | 현장 조사·서술 | 예외 | 예외(form_wording) [S-REQ-SEL] |

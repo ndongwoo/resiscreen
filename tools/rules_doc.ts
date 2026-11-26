@@ -5,10 +5,10 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { RuleSet } from '../src/engine/rules.ts';
+import { fillMessages, type RuleSet } from '../src/engine/rules.ts';
 
 const root = process.cwd();
-const rules = JSON.parse(readFileSync(join(root, 'rules/2026.json'), 'utf8')) as RuleSet;
+const rules = fillMessages(JSON.parse(readFileSync(join(root, 'rules/2026.json'), 'utf8')) as RuleSet);
 
 /** 이름을 바꾼 규칙 ID. 지운 ID는 다시 쓰지 않는다 */
 export const RENAMED: { from: string; to: string; since: string; reason: string }[] = [
@@ -38,8 +38,12 @@ L.push('이전 결과 파일(엑셀·JSON)과 비교할 때 이 표로 맞춰 �
 L.push('| 이전 ID | 새 ID | 바뀐 규칙 버전 | 이유 |', '|---|---|---|---|');
 for (const r of RENAMED) L.push(`| ${r.from} | ${r.to} | ${r.since} | ${esc(r.reason)} |`);
 L.push('', '## 규칙 파일(rules/' + rules.form.year + '.json)', '');
+L.push("'사용'이 끔인 규칙은 실행하지 않는다. 단계 칸은 켰을 때의 단계이며, 끈 동안에는 INFO를 포함해 어떤 결과도 내지 않는다.", '');
 L.push('| ID | 종류 | 단계 | 사용 | 내용 |', '|---|---|---|---|---|');
-for (const r of rules.rules) L.push(`| ${r.id} | ${r.type} | ${r.level} | ${r.enabled ? '켬' : '끔'} | ${esc(r.message)} |`);
+/** 단계 표시: 수식 참조 여부로 단계가 갈리는 규칙은 둘 다 */
+const levelOf = (r: (typeof rules.rules)[number]) =>
+  r.level_if_unreferenced && r.level_if_unreferenced !== r.level ? `${r.level}/${r.level_if_unreferenced}(수식 참조 여부에 따라)` : r.level;
+for (const r of rules.rules) L.push(`| ${r.id} | ${r.type} | ${levelOf(r)} | ${r.enabled ? '켬' : '끔(결과 없음)'} | ${esc(r.message)} |`);
 L.push('', '## 재계산 규칙의 단계', '');
 L.push('양식 수식대로 다시 계산했는데 값이 다르면(수식 훼손·값 덮어쓰기) ERROR, 해석 차이가 있을 수 있으면 WARNING.', '');
 L.push('| ID | 단계 | 내용 |', '|---|---|---|');
