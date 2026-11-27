@@ -285,6 +285,19 @@ export async function runPaperStage(ctx: Context, opts: PaperStageOptions): Prom
       const hit = related?.find(issns, names) ?? kci?.find(issns, names);
       if (!hit) emit('kci', { sheet: c.sheet, cell: `${c.columns['journal']}${p.row}`, row: p.row, detail: { kci_as_of: opts.journals.kci?.as_of, searched_by: issns.length ? 'issn+name' : 'name' } });
     }
+    // 더 발행되지 않는 학술지로 적은 논문(유관학회지 목록의 discontinued, 기재한 학술지명으로 대조)
+    const gone = related?.find([], [p.journal])?.entry.discontinued;
+    if (gone) {
+      const into = gone.merged_into_short || gone.merged_into;
+      const lead = `${gone.since.slice(0, 4)}년부터 ${into ? `${into}로 통합되어 ` : ''}`;
+      emit('discontinued_journal', {
+        sheet: c.sheet,
+        cell: `${c.columns['journal']}${p.row}`,
+        row: p.row,
+        message: lead + (rules.get('discontinued_journal')?.message ?? ''),
+        detail: { journal: p.journal, ...gone },
+      });
+    }
     if (scie && (claims['scie'] ?? []).includes(p.claim)) {
       const hit = scie.find(issns, names);
       const tokens = (hit?.entry.status ?? '').toUpperCase().split(/[^A-Z]+/);

@@ -12,6 +12,8 @@ export interface JournalEntry {
   /** SCIE 목록의 경우 색인 구분(SCIE, ESCI 등) */
   status?: string;
   aliases?: string[];
+  /** 더 발행되지 않는 학술지(다른 학술지로 통합 등). since는 YYYY-MM-DD */
+  discontinued?: { since: string; merged_into?: string; merged_into_short?: string };
 }
 
 export interface JournalList {

@@ -17,7 +17,7 @@
   },
   {
    "name_ko": "대한기관식도과학회지",
-   "issn": "",
+   "issn": "1226-0916",
    "eissn": "",
    "aliases": [
     "Journal of Korean Bronchoesophagological Society",
@@ -25,7 +25,12 @@
     "J Korean Bronchoesophagol Soc"
    ],
    "status": "유관학회지",
-   "basis": "KCI 목록에 없음. 이름으로만 대조"
+   "discontinued": {
+    "since": "2014-01-01",
+    "merged_into": "Clinical and Experimental Otorhinolaryngology",
+    "merged_into_short": "CEO"
+   },
+   "basis": "공식 명칭은 대한기관식도과학회지. KCI 미등재. 2014-01-01부터 CEO(Clinical and Experimental Otorhinolaryngology)로 통합되어 현재 발행되지 않음. 옛 pISSN 1226-0916(학회 확인(수련간사, 2026-11-27)). 평가 연도 논문이 이 학술지로 적혀 있으면 P-JOUR-DEFUNCT WARNING"
   },
   {
    "name_ko": "대한두경부종양학회지",

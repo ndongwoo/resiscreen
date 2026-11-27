@@ -1,6 +1,6 @@
 # 규칙 ID 목록
 
-> 2026 규칙 2026.8.3 기준. `npm run gen:docs`로 다시 만든다(tools/rules_doc.ts). 결과 화면·결과 엑셀·CLI JSON의 '규칙' 칸에 이 ID가 나온다.
+> 2026 규칙 2026.9.0 기준. `npm run gen:docs`로 다시 만든다(tools/rules_doc.ts). 결과 화면·결과 엑셀·CLI JSON의 '규칙' 칸에 이 ID가 나온다.
 
 ## 이전 ID → 새 ID
 
@@ -68,6 +68,7 @@
 | P-TYPE-01 | paper | WARNING | 켬 | 불인정 형식: 서지 유형이 Letter·Editorial·Comment입니다. Letter to the editor는 인정되지 않을 수 있습니다. |
 | P-TYPE-02 | paper | WARNING | 켬 | 원저로 기재했으나 서지 유형이 종설·증례입니다. 한이인지 원저 가중치가 적용되지 않을 수 있습니다. |
 | P-JOUR-KCI | paper | WARNING | 켬 | 국내지로 기재했으나 KCI 등재(후보)지·유관학회지 목록에서 찾지 못했습니다. 인정 대상 학술지인지 확인하세요. |
+| P-JOUR-DEFUNCT | paper | WARNING | 켬 | 현재 발행되지 않는 학술지입니다. 학술지명을 확인하세요. |
 | P-JOUR-SCIE | paper | WARNING | 켬 | SCI/SCIE로 기재했으나 불러온 SCIE 목록에서 찾지 못했습니다(또는 ESCI 단독). 등재 여부를 확인하세요. |
 | P-JOUR-SCIE-SKIP | paper | INFO | 켬 | SCIE 목록 미등록으로 확인 생략: SCIE 저널 목록을 불러오면 SCI/SCIE 기재 논문의 등재 여부를 확인합니다. |
 | P-AUTH-01 | paper | WARNING | 켬 | 공동 제1저자(동등 기여) 표시가 서지에 있는데 총 제1저자 수가 1로 적혀 있습니다. 표시 누락인지 확인하세요. |

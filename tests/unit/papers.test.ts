@@ -1,10 +1,11 @@
 /** 논문 검사(시트 안 검사 + 가짜 서지 응답). 실제 네트워크를 쓰지 않는다. */
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { checkWorkbook } from '../../src/engine/index.ts';
 import { BiblioClient } from '../../src/engine/biblio/client.ts';
 import { BiblioCache, MemoryCache } from '../../src/engine/biblio/cache.ts';
 import type { FetchLike } from '../../src/engine/biblio/throttle.ts';
-import type { JournalLists } from '../../src/engine/journals.ts';
+import type { JournalList, JournalLists } from '../../src/engine/journals.ts';
 import type { Finding } from '../../src/engine/report.ts';
 import { buildXlsx, type CellSpec } from '../helpers/build_xlsx.ts';
 import { syntheticForm } from '../helpers/synthetic_form.ts';
@@ -163,6 +164,21 @@ describe('저널 등재 목록', () => {
     expect(by((await run({ D4: '연구재단등재(후보)지', C4: '없는 학회지' }, null)).findings, 'P-JOUR-KCI')).toHaveLength(1);
     expect(by((await run({ D4: '연구재단등재(후보)지', C4: 'Korean Journal of Synthesis' }, null)).findings, 'P-JOUR-KCI')).toHaveLength(0);
     expect(by((await run({ D4: '유관학회지', C4: 'Journal of Rhinology' }, null)).findings, 'P-JOUR-KCI')).toHaveLength(0);
+  });
+  it('발행되지 않는 학술지(대한기관식도과학회지)로 적으면 WARNING, 유관학회지로는 그대로 인정', async () => {
+    const related = JSON.parse(readFileSync(new URL('../../data/journals/kci_related.json', import.meta.url), 'utf8')) as JournalList;
+    const lists: JournalLists = { ...KCI, related };
+    for (const name of ['대한기관식도과학회지', 'Journal of Korean Bronchoesophagological Society']) {
+      const r = await run({ D4: '유관학회지', C4: name }, null, lists);
+      const f = by(r.findings, 'P-JOUR-DEFUNCT');
+      expect(f.map((x) => [x.level, x.cell])).toEqual([['WARNING', 'C4']]);
+      expect(f[0]!.message).toBe('2014년부터 CEO로 통합되어 현재 발행되지 않는 학술지입니다. 학술지명을 확인하세요.');
+      expect(by(r.findings, 'P-JOUR-KCI')).toHaveLength(0);
+    }
+    for (const name of ['Clinical and Experimental Otorhinolaryngology', '대한비과학회지'])
+      expect(by((await run({ D4: '유관학회지', C4: name }, null, lists)).findings, 'P-JOUR-DEFUNCT')).toHaveLength(0);
+    const entry = related.journals.find((j) => j.name_ko === '대한기관식도과학회지')!;
+    expect(entry).toMatchObject({ issn: '1226-0916', discontinued: { since: '2014-01-01', merged_into_short: 'CEO' } });
   });
   it('SCIE 목록이 없으면 INFO, 있으면 ISSN으로 대조하고 ESCI 단독은 WARNING', async () => {
     expect(by((await run({}, null)).findings, 'P-JOUR-SCIE-SKIP')).toHaveLength(1);
